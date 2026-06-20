@@ -380,6 +380,8 @@ export const transformNotification = (notification) => {
         read: notification.read ?? notification.is_read ?? false,
         postId: notification.post_id?.toString(),
         commentId: notification.comment_id?.toString(),
+        postContent: notification.post?.caption || notification.post?.content || null,
+        postImageUrl: getFullUrl(notification.post?.image_url || notification.post?.video_url || notification.post?.image || notification.post?.video) || null,
     };
 };
 export const api = {
@@ -581,13 +583,13 @@ export const api = {
             const profile = await api.profiles.get(username);
             const userId = profile.id;
             const res = await apiClient.get(`/users/${userId}/posts?limit=50`);
-            return res.data.map(transformPost);
+            return res.data.map(transformPost).filter((post) => !post.groupId);
         },
         getReels: async (username) => {
             const profile = await api.profiles.get(username);
             const userId = profile.id;
             const res = await apiClient.get(`/users/${userId}/posts?limit=50`);
-            return res.data.map(transformPost).filter((post) => post.isReel || isVideoMedia(post.imageUrl));
+            return res.data.map(transformPost).filter((post) => (post.isReel || isVideoMedia(post.imageUrl)) && !post.groupId);
         },
         update: async (data) => {
             let profile_picture = data.profile_picture;
@@ -722,6 +724,14 @@ export const api = {
             const res = await apiClient.delete(`/groups/${groupId}/members/${userId}`);
             return res.data;
         },
+        leave: async (groupId) => {
+            const res = await apiClient.post(`/groups/${groupId}/leave`);
+            return res.data;
+        },
+        deleteGroup: async (groupId) => {
+            const res = await apiClient.delete(`/groups/${groupId}`);
+            return res.data;
+        },
     },
     search: {
         users: async (query) => {
@@ -777,7 +787,7 @@ export const api = {
             const res = await apiClient.get(`/conversations/${conversationId}/messages/`);
             return res.data.map(transformMessage);
         },
-        sendMessage: async (conversationId, content, file, audioBlob, sticker) => {
+        sendMessage: async (conversationId, content, file, audioBlob, sticker, replyToId) => {
             let imageUrl = null;
             let videoUrl = null;
             let audioUrl = null;
@@ -806,8 +816,13 @@ export const api = {
                 audio_url: audioUrl,
                 sticker_url: sticker?.url || null,
                 sticker_id: sticker?.id || null,
+                reply_to_id: replyToId || null,
             });
             return transformMessage(res.data);
+        },
+        deleteMessage: async (messageId) => {
+            const res = await apiClient.delete(`/messages/${messageId}`);
+            return res.data;
         },
         createConversation: async (participantIds, name) => {
             const currentUserId = authStorage.getItem('user_id');

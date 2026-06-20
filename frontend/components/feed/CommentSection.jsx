@@ -2,15 +2,17 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../services/api";
-import { Send, Heart, CornerDownRight, X } from "lucide-react";
+import { Send, Heart, CornerDownRight, X, Smile } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../store";
 import { Avatar } from "../ui/Avatar";
 import { useToast } from "../ui/Toast";
 import { getApiErrorMessage } from "../../services/api";
+import EmojiPicker, { Theme } from "emoji-picker-react";
 export const CommentSection = ({ postId, groupId, authorUsername, }) => {
     const [content, setContent] = useState("");
     const [replyTarget, setReplyTarget] = useState(null);
+    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const queryClient = useQueryClient();
     const { user } = useAuthStore();
     const { toast } = useToast();
@@ -138,6 +140,9 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
             : trimmed;
         createCommentMutation.mutate(replyText);
     };
+    const handleEmojiClick = (emojiObj) => {
+        setContent(prev => prev + emojiObj.emoji);
+    };
     const startReply = (comment) => {
         setReplyTarget(comment);
         setContent((current) => current.replace(/^@\S+\s*/, ""));
@@ -167,11 +172,19 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
                             // Fallback
                             if (topLevel.length > 0)
                                 topLevel[topLevel.length - 1].replies.push(r);
-                            else
-                                topLevel.push({ ...r, replies: [] });
-                        });
-                        return topLevel.map((comment) => (_jsx(CommentItem, { comment: comment, user: user, startReply: startReply, likeCommentMutation: likeCommentMutation }, comment.id)));
-                    })()), comments?.length === 0 && (_jsx("p", { className: "text-center text-xs text-zinc-600 italic py-2", children: "No comments yet. Be the first to say something!" })), _jsx("div", { className: "h-4" })] }), _jsxs("div", { className: "sticky bottom-20 mt-3 space-y-2 border-t border-white/5 bg-[#111113] pt-3 md:bottom-0", children: [replyTarget && (_jsxs("div", { className: "flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-xs text-white", children: [_jsxs("div", { className: "flex min-w-0 items-center gap-2", children: [_jsx(CornerDownRight, { size: 14, className: "text-primary shrink-0" }), _jsxs("span", { className: "truncate", children: ["Replying to @", replyTarget.user?.username, ": ", replyTarget.content] })] }), _jsx("button", { type: "button", onClick: () => setReplyTarget(null), className: "h-7 w-7 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white", "aria-label": "Cancel reply", children: _jsx(X, { size: 14 }) })] })), _jsxs("form", { onSubmit: handleSubmit, className: "flex items-end gap-2", children: [_jsx("textarea", { rows: 1, value: content, onChange: (e) => setContent(e.target.value), placeholder: replyTarget ? `Reply to @${replyTarget.user?.username}` : "Write a comment...", className: "min-h-11 max-h-28 flex-1 resize-none bg-white/10 border border-white/10 rounded-2xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-violet-500/50 transition-all placeholder:text-zinc-500" }), _jsx("button", { type: "submit", disabled: !content.trim() || createCommentMutation.isPending, className: "h-11 w-11 shrink-0 flex items-center justify-center bg-violet-600 text-white rounded-2xl hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-500/20", "aria-label": "Send comment", children: _jsx(Send, { size: 17 }) })] })] })] }));
+                                else
+                                    topLevel.push({ ...r, replies: [] });
+                            });
+                            return topLevel.map((comment) => (_jsx(CommentItem, { comment: comment, user: user, startReply: startReply, likeCommentMutation: likeCommentMutation }, comment.id)));
+                        })()), comments?.length === 0 && (_jsx("p", { className: "text-center text-xs text-zinc-600 italic py-2", children: "No comments yet. Be the first to say something!" })), _jsx("div", { className: "h-4" })] }), _jsxs("div", { className: "sticky bottom-20 mt-3 space-y-2 border-t border-white/5 bg-[#111113] pt-3 md:bottom-0 z-40", children: [replyTarget && (_jsxs("div", { className: "flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-xs text-white", children: [_jsxs("div", { className: "flex min-w-0 items-center gap-2", children: [_jsx(CornerDownRight, { size: 14, className: "text-primary shrink-0" }), _jsxs("span", { className: "truncate", children: ["Replying to @", replyTarget.user?.username, ": ", replyTarget.content] })] }), _jsx("button", { type: "button", onClick: () => setReplyTarget(null), className: "h-7 w-7 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white", "aria-label": "Cancel reply", children: _jsx(X, { size: 14 }) })] })), _jsxs("form", { onSubmit: handleSubmit, className: "flex items-end gap-2 relative", children: [
+                            _jsx(Avatar, { src: user?.avatarUrl, label: user?.username, className: "w-11 h-11 rounded-2xl object-cover shrink-0 border border-white/10" }),
+                            _jsxs("div", { className: "flex-1 flex items-center bg-white/10 border border-white/10 rounded-2xl relative", children: [
+                                _jsx("button", { type: "button", onClick: () => setIsEmojiPickerOpen(!isEmojiPickerOpen), className: "h-11 w-11 shrink-0 flex items-center justify-center text-zinc-400 hover:text-white transition-colors", children: _jsx(Smile, { size: 20, className: isEmojiPickerOpen ? "text-primary" : "" }) }),
+                                isEmojiPickerOpen && (_jsx("div", { className: "absolute bottom-14 left-0 z-50", children: _jsx(EmojiPicker, { theme: Theme.DARK, onEmojiClick: handleEmojiClick, lazyLoadEmojis: true }) })),
+                                _jsx("textarea", { rows: 1, value: content, onChange: (e) => setContent(e.target.value), placeholder: replyTarget ? `Reply to @${replyTarget.user?.username}` : "Write a comment...", className: "min-h-[44px] max-h-28 flex-1 resize-none bg-transparent px-2 py-3 text-sm text-zinc-100 focus:outline-none transition-all placeholder:text-zinc-500 hide-scrollbar" })
+                            ]}), 
+                            _jsx("button", { type: "submit", disabled: !content.trim() || createCommentMutation.isPending, className: "h-11 w-11 shrink-0 flex items-center justify-center bg-violet-600 text-white rounded-2xl hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-500/20", "aria-label": "Send comment", children: _jsx(Send, { size: 17 }) })
+                        ] })] }));
 };
 const CommentItem = ({ comment, user, startReply, likeCommentMutation }) => {
     const [showReplies, setShowReplies] = useState(false);

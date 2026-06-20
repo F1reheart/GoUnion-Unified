@@ -76,7 +76,33 @@ export const Notifications = () => {
                 }
                 return (_jsx("div", { className: "space-y-4", children: notifications.map((notif, i) => {
                         const targetPath = notif.postId ? `/post/${notif.postId}` : `/profile/${notif.actor?.username}`;
-                        return (_jsxs(motion.div, { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { delay: i * 0.05 }, className: `glass-panel p-4 rounded-2xl flex items-center gap-4 border transition-colors ${!notif.read ? 'border-primary/30 bg-primary/5' : 'border-white/5 opacity-75 hover:opacity-100'}`, children: [_jsxs(Link, { to: `/profile/${notif.actor?.username}`, className: "relative shrink-0", children: [_jsx(Avatar, { src: notif.actor?.avatarUrl, label: notif.actor?.fullName || notif.actor?.username, alt: "", className: "w-12 h-12 rounded-xl object-cover bg-white/5" }), _jsx("div", { className: "absolute -bottom-1 -right-1 w-5 h-5 bg-[#0a0a0c] rounded-full flex items-center justify-center", children: getIconForType(notif.type) })] }), _jsxs(Link, { to: targetPath, onClick: () => markOneReadMutation.mutate(String(notif.id)), className: "flex-1 min-w-0", children: [_jsxs("p", { className: "text-sm text-white/80 leading-snug", children: [_jsx("span", { className: "font-bold text-white hover:underline", children: notif.actor?.fullName || notif.actor?.username }), " ", notif.message || getMessageForType(notif.type)] }), _jsx("p", { className: "text-xs text-white/40 mt-1", children: notif.timestamp })] }), !notif.read && (_jsx("div", { className: "w-2 h-2 rounded-full bg-primary shrink-0" }))] }, notif.id));
+                        return (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={notif.id} className={`glass-panel p-4 rounded-2xl flex items-center gap-4 border transition-colors ${!notif.read ? 'border-primary/30 bg-primary/5' : 'border-white/5 opacity-75 hover:opacity-100'}`}>
+                                <Link to={`/profile/${notif.actor?.username}`} className="relative shrink-0">
+                                    <Avatar src={notif.actor?.avatarUrl} label={notif.actor?.fullName || notif.actor?.username} alt="" className="w-12 h-12 rounded-xl object-cover bg-white/5" />
+                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#0a0a0c] rounded-full flex items-center justify-center">
+                                        {getIconForType(notif.type)}
+                                    </div>
+                                </Link>
+                                <Link to={targetPath} onClick={() => markOneReadMutation.mutate(String(notif.id))} className="flex-1 min-w-0">
+                                    <p className="text-sm text-white/80 leading-snug">
+                                        <span className="font-bold text-white hover:underline">{notif.actor?.fullName || notif.actor?.username}</span> {notif.message || getMessageForType(notif.type)}
+                                    </p>
+                                    {(notif.postContent || notif.postImageUrl) && (
+                                        <div className="mt-2 flex items-center gap-2 p-2 rounded-lg bg-black/40 border border-white/5">
+                                            {notif.postImageUrl && (
+                                                <img src={notif.postImageUrl} alt="" className="w-8 h-8 rounded object-cover" />
+                                            )}
+                                            {notif.postContent && (
+                                                <p className="text-xs text-white/50 truncate flex-1">{notif.postContent}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                    <p className="text-xs text-white/40 mt-1">{notif.timestamp}</p>
+                                </Link>
+                                {!notif.read && <div className="w-2 h-2 rounded-full bg-primary shrink-0" />}
+                            </motion.div>
+                        );
                     }) }));
             })()] }));
 };

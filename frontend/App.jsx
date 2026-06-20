@@ -44,7 +44,7 @@ const queryClient = new QueryClient({
 const AppLayout = ({ children }) => {
     const location = useLocation();
     const isDiscover = location.pathname === '/discover';
-    const isMessages = location.pathname === '/messages';
+    const isMessages = location.pathname === '/messages' || (location.pathname.startsWith('/groups/') && location.pathname !== '/groups');
     const isHomeFeed = location.pathname === '/';
     return (_jsxs("div", { className: "flex h-screen bg-[#030303] text-white overflow-hidden selection:bg-white/20 relative", children: [!isMessages && _jsx(Sidebar, {}), _jsxs("div", { className: "flex-1 flex flex-col min-w-0 relative", children: [!isMessages && (_jsx("div", { className: "fixed top-0 right-0 left-0 md:left-64 lg:right-80 z-[100]", children: _jsx(TopNav, {}) })), _jsx("main", { className: `flex-1 overflow-y-auto hide-scrollbar ${isMessages ? 'p-0' : `md:pl-64 lg:pr-80 ${isDiscover ? 'pb-0' : 'pb-6'} md:pb-0 pt-16`}`, children: _jsx("div", { className: isMessages
                                 ? "h-full w-full"
@@ -337,6 +337,7 @@ const AppRoutes = () => {
     const location = useLocation();
     const [showStartupSplash, setShowStartupSplash] = useState(true);
     const [showPageDots, setShowPageDots] = useState(false);
+    const [isOffline, setIsOffline] = useState(!navigator.onLine);
     const { setInstalled } = usePwaStore();
     const { toast } = useToast();
     useEffect(() => {
@@ -354,8 +355,8 @@ const AppRoutes = () => {
         return () => window.removeEventListener("gounion-auth-logout", clearAuthenticatedQueries);
     }, []);
     useEffect(() => {
-        const handleOffline = () => toast("You are offline. Some features may be unavailable.", "error");
-        const handleOnline = () => toast("Back online!", "success");
+        const handleOffline = () => { setIsOffline(true); toast("You are offline. Some features may be unavailable.", "error"); };
+        const handleOnline = () => { setIsOffline(false); toast("Back online!", "success"); };
         window.addEventListener("offline", handleOffline);
         window.addEventListener("online", handleOnline);
         return () => {
@@ -460,7 +461,7 @@ const AppRoutes = () => {
         }
         return _jsx(Navigate, { to: "/login", replace: true });
     }
-    return (_jsx(ErrorBoundary, { children: _jsxs(_Fragment, { children: [showPageDots && _jsx(PageLoadingDots, {}), _jsx(PwaUpdater, {}), _jsxs(Routes, { children: [_jsx(Route, { path: "/login", element: isAuthenticated ? _jsx(Navigate, { to: "/" }) : _jsx(Login, {}) }), _jsx(Route, { path: "/download", element: _jsx(DownloadPage, {}) }), _jsx(Route, { path: "/forgot-password", element: _jsx(ForgotPassword, {}) }), _jsx(Route, { path: "/reset-password", element: _jsx(ResetPassword, {}) }), _jsx(Route, { path: "/confirm-email", element: _jsx(ConfirmEmail, {}) }), _jsx(Route, { path: "/confirm-identity", element: _jsx(ConfirmIdentity, {}) }), _jsx(Route, { path: "/", element: _jsx(PrivateRoute, { children: _jsx(Dashboard, {}) }) }), _jsx(Route, { path: "/groups", element: _jsx(PrivateRoute, { children: _jsx(Groups, {}) }) }), _jsx(Route, { path: "/groups/:id", element: _jsx(PrivateRoute, { children: _jsx(GroupDetails, {}) }) }), _jsx(Route, { path: "/messages", element: _jsx(PrivateRoute, { children: _jsx(Messages, {}) }) }), _jsx(Route, { path: "/alumni", element: _jsx(PrivateRoute, { children: _jsx(Alumni, {}) }) }), _jsx(Route, { path: "/profile/:username", element: _jsx(PrivateRoute, { children: _jsx(Profile, {}) }) }), _jsx(Route, { path: "/post/:id", element: _jsx(PrivateRoute, { children: _jsx(PostDetail, {}) }) }), _jsx(Route, { path: "/admin", element: _jsx(PrivateRoute, { children: _jsx(AdminPanel, {}) }) }), _jsx(Route, { path: "/discover", element: _jsx(PrivateRoute, { children: _jsx(Discover, {}) }) }), _jsx(Route, { path: "/sound/:soundName", element: _jsx(PrivateRoute, { children: _jsx(SoundFeed, {}) }) }), _jsx(Route, { path: "/settings", element: _jsx(PrivateRoute, { children: _jsx(Settings, {}) }) }), _jsx(Route, { path: "/notifications", element: _jsx(PrivateRoute, { children: _jsx(Notifications, {}) }) }), _jsx(Route, { path: "*", element: _jsx(Navigate, { to: "/" }) })] })] }) }));
+    return (_jsx(ErrorBoundary, { children: _jsxs(_Fragment, { children: [isOffline && (_jsxs("div", { className: "fixed top-0 left-0 w-full z-[1000] bg-red-500/90 backdrop-blur-sm text-white text-[10px] sm:text-xs font-bold py-1 sm:py-1.5 text-center flex items-center justify-center gap-2 shadow-lg", children: [_jsx("span", { className: "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white animate-pulse" }), "You are currently offline"] })), showPageDots && _jsx(PageLoadingDots, {}), _jsx(PwaUpdater, {}), _jsxs(Routes, { children: [_jsx(Route, { path: "/login", element: isAuthenticated ? _jsx(Navigate, { to: "/" }) : _jsx(Login, {}) }), _jsx(Route, { path: "/download", element: _jsx(DownloadPage, {}) }), _jsx(Route, { path: "/forgot-password", element: _jsx(ForgotPassword, {}) }), _jsx(Route, { path: "/reset-password", element: _jsx(ResetPassword, {}) }), _jsx(Route, { path: "/confirm-email", element: _jsx(ConfirmEmail, {}) }), _jsx(Route, { path: "/confirm-identity", element: _jsx(ConfirmIdentity, {}) }), _jsx(Route, { path: "/", element: _jsx(PrivateRoute, { children: _jsx(Dashboard, {}) }) }), _jsx(Route, { path: "/groups", element: _jsx(PrivateRoute, { children: _jsx(Groups, {}) }) }), _jsx(Route, { path: "/groups/:id", element: _jsx(PrivateRoute, { children: _jsx(GroupDetails, {}) }) }), _jsx(Route, { path: "/messages", element: _jsx(PrivateRoute, { children: _jsx(Messages, {}) }) }), _jsx(Route, { path: "/alumni", element: _jsx(PrivateRoute, { children: _jsx(Alumni, {}) }) }), _jsx(Route, { path: "/profile/:username", element: _jsx(PrivateRoute, { children: _jsx(Profile, {}) }) }), _jsx(Route, { path: "/post/:id", element: _jsx(PrivateRoute, { children: _jsx(PostDetail, {}) }) }), _jsx(Route, { path: "/admin", element: _jsx(PrivateRoute, { children: _jsx(AdminPanel, {}) }) }), _jsx(Route, { path: "/discover", element: _jsx(PrivateRoute, { children: _jsx(Discover, {}) }) }), _jsx(Route, { path: "/sound/:soundName", element: _jsx(PrivateRoute, { children: _jsx(SoundFeed, {}) }) }), _jsx(Route, { path: "/settings", element: _jsx(PrivateRoute, { children: _jsx(Settings, {}) }) }), _jsx(Route, { path: "/notifications", element: _jsx(PrivateRoute, { children: _jsx(Notifications, {}) }) }), _jsx(Route, { path: "*", element: _jsx(Navigate, { to: "/" }) })] })] }) }));
 };
 const App = () => {
     return (_jsx(QueryClientProvider, { client: queryClient, children: _jsx(ToastProvider, { children: _jsx(BrowserRouter, { children: _jsx(AppRoutes, {}) }) }) }));

@@ -174,7 +174,7 @@ export const Discover = () => {
                                             }, onPause: () => setPausedVideos((prev) => ({ ...prev, [reel.id]: true })), onTimeUpdate: (e) => {
                                                 const v = e.currentTarget;
                                                 setVideoProgress((prev) => ({ ...prev, [reel.id]: { current: v.currentTime, duration: v.duration || 0 } }));
-                                            }, className: `relative z-10 h-full w-full object-cover bg-transparent shadow-2xl transition-transform duration-300 ${activeCommentPost?.id === reel.id
+                                            }, className: `relative z-10 h-full w-full object-contain bg-transparent shadow-2xl transition-transform duration-300 ${activeCommentPost?.id === reel.id
                                                 ? "scale-[0.52] -translate-y-[10vh] md:scale-[0.68]"
                                                 : ""}`, loop: true, muted: isMuted, playsInline: true, preload: "auto", onClick: (e) => {
                                                 const video = e.currentTarget;

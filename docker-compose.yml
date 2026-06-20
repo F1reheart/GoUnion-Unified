@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  database:
+    image: mongo:latest
+    container_name: gounion_database
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - gounion-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gounion_backend
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./backend/.env
+    environment:
+      - PORT=8001
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://database:27017/gounion
+    depends_on:
+      - database
+    networks:
+      - gounion-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gounion_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - gounion-network
+    restart: unless-stopped
+
+networks:
+  gounion-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

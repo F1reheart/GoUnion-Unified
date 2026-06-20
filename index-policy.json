@@ -1,0 +1,13 @@
+{
+    "indexingMode": "consistent",
+    "automatic": true,
+    "includedPaths": [
+        {
+            "path": "/*"
+        },
+        {
+            "path": "/timestamp/?"
+        }
+    ],
+    "excludedPaths": []
+}

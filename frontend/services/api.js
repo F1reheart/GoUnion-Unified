@@ -521,11 +521,6 @@ export const api = {
             const res = await apiClient.post(`/posts/${id}/like`);
             return { success: true, likes_count: res.data.likes_count };
         },
-        view: async (id) => {
-            try {
-                await apiClient.post(`/posts/${id}/view`);
-            } catch {}
-        },
         delete: async (id) => {
             try {
                 const res = await apiClient.delete(`/posts/${id}`);
@@ -610,10 +605,6 @@ export const api = {
                 payload.bio = data.bio;
             if (data.university !== undefined)
                 payload.university = data.university;
-            if (data.fullName !== undefined)
-                payload.full_name = data.fullName;
-            if (data.username !== undefined)
-                payload.username = data.username;
             if (profile_picture !== undefined)
                 payload.profile_picture = profile_picture;
             if (cover_photo !== undefined)

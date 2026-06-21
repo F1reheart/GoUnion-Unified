@@ -152,13 +152,26 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
         return () => observer.disconnect();
     }, [autoPlayOnVisible]);
     // ── Auto-hide controls ────────────────────────────────────
+    const resetHide = useCallback(() => {
+        setShowControls(true);
+        if (hideTimer.current)
+            clearTimeout(hideTimer.current);
+        if (playing && !isDragging) {
+            hideTimer.current = setTimeout(() => setShowControls(false), 3000);
+        }
+    }, [playing, isDragging]);
+    useEffect(() => () => { if (hideTimer.current)
+        clearTimeout(hideTimer.current); }, []);
     useEffect(() => {
         if (!playing || isDragging) {
             setShowControls(true);
-        } else {
-            setShowControls(false);
+            if (hideTimer.current)
+                clearTimeout(hideTimer.current);
         }
-    }, [playing, isDragging]);
+        else {
+            resetHide();
+        }
+    }, [playing, isDragging, resetHide]);
     // ── Tap icon flash (TikTok style) ─────────────────────────
     const flashTapIcon = (icon) => {
         setTapIcon(icon);
@@ -175,11 +188,14 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
             if (v.paused) {
                 v.play().then(() => setPlaying(true)).catch(() => { });
                 flashTapIcon('play');
+                if (hideTimer.current)
+                    clearTimeout(hideTimer.current);
             }
             else {
                 v.pause();
                 setPlaying(false);
                 flashTapIcon('pause');
+                resetHide();
             }
         }, children: [_jsx("video", { ref: videoRef, src: src, className: `w-full h-full ${objectCover !== false ? 'object-cover' : 'object-contain'}`, muted: muted, playsInline: true, preload: "metadata", onTimeUpdate: () => {
                     const v = videoRef.current;

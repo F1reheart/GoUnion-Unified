@@ -11,26 +11,11 @@ export const Settings = () => {
     const [activeTab, setActiveTab] = useState(null);
     // Account Form State
     const [fullName, setFullName] = useState(user?.fullName || "");
-    const [username, setUsername] = useState(user?.username || "");
     const [bio, setBio] = useState(user?.bio || "");
     const [university, setUniversity] = useState(user?.university || "");
     const [avatarFile, setAvatarFile] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || "");
     const [saveSuccess, setSaveSuccess] = useState(false);
-    const [usernameError, setUsernameError] = useState("");
-
-    const lastUsernameChangeKey = `last_username_change_${user?.id}`;
-    const lastUsernameChange = localStorage.getItem(lastUsernameChangeKey);
-    let canChangeUsername = true;
-    let daysUntilCanChange = 0;
-    if (lastUsernameChange) {
-        const lastChangeDate = new Date(parseInt(lastUsernameChange, 10));
-        const daysSinceChange = (Date.now() - lastChangeDate.getTime()) / (1000 * 60 * 60 * 24);
-        if (daysSinceChange < 30) {
-            canChangeUsername = false;
-            daysUntilCanChange = Math.ceil(30 - daysSinceChange);
-        }
-    }
     const updateProfileMutation = useMutation({
         mutationFn: (data) => api.profiles.update(data),
         onSuccess: (updatedUser) => {
@@ -44,16 +29,7 @@ export const Settings = () => {
     });
     const handleSaveProfile = (e) => {
         e.preventDefault();
-        const dataToUpdate = { fullName, bio, university, avatar: avatarFile };
-        if (username !== user?.username) {
-            if (!canChangeUsername) {
-                setUsernameError(`You can change your username again in ${daysUntilCanChange} days.`);
-                return;
-            }
-            dataToUpdate.username = username;
-            localStorage.setItem(lastUsernameChangeKey, Date.now().toString());
-        }
-        updateProfileMutation.mutate(dataToUpdate);
+        updateProfileMutation.mutate({ fullName, bio, university, avatar: avatarFile });
     };
     const tabs = [
         { id: 'account', icon: User, label: "Account Profile", desc: "Manage your public presence" },
@@ -72,7 +48,7 @@ export const Settings = () => {
                                                         if (avatarPreview?.startsWith("blob:"))
                                                             URL.revokeObjectURL(avatarPreview);
                                                         setAvatarPreview(URL.createObjectURL(file));
-                                                    } })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-bold text-white", children: "Profile Photo" }), _jsx("p", { className: "text-xs text-white/40 mt-1", children: "Recommended size: 400x400px" })] })] }), _jsxs("div", { className: "space-y-4", children: [_jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1", children: "Full Name" }), _jsx("input", { type: "text", value: fullName, onChange: (e) => setFullName(e.target.value), className: "w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/30 transition-all font-medium" })] }), _jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1", children: "Username" }), _jsx("input", { type: "text", value: username, onChange: (e) => { setUsername(e.target.value); setUsernameError(""); }, disabled: !canChangeUsername, className: `w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-white focus:outline-none transition-all font-medium ${!canChangeUsername ? 'opacity-50 cursor-not-allowed' : 'focus:border-primary/30'}` }), !canChangeUsername && _jsx("p", { className: "text-xs text-red-400 mt-1 ml-1", children: `You can change your username again in ${daysUntilCanChange} days.` }), usernameError && _jsx("p", { className: "text-xs text-red-400 mt-1 ml-1", children: usernameError })] }), _jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1", children: "Bio" }), _jsx("textarea", { value: bio, onChange: (e) => setBio(e.target.value), rows: 3, className: "w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/30 transition-all font-medium resize-none" })] }), _jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1", children: "University" }), _jsx("input", { type: "text", value: university, onChange: (e) => setUniversity(e.target.value), className: "w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/30 transition-all font-medium" })] })] }), _jsx("button", { type: "submit", disabled: updateProfileMutation.isPending, className: "w-full h-14 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-zinc-200 transition-all active:scale-[0.98] disabled:opacity-50", children: updateProfileMutation.isPending ? (_jsx("div", { className: "w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" })) : saveSuccess ? (_jsx("span", { className: "text-emerald-600", children: "Profile Updated!" })) : (_jsxs(_Fragment, { children: [_jsx(Save, { size: 18 }), _jsx("span", { children: "Save Changes" })] })) })] })] }));
+                                                    } })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-bold text-white", children: "Profile Photo" }), _jsx("p", { className: "text-xs text-white/40 mt-1", children: "Recommended size: 400x400px" })] })] }), _jsxs("div", { className: "space-y-4", children: [_jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1", children: "Full Name" }), _jsx("input", { type: "text", value: fullName, onChange: (e) => setFullName(e.target.value), className: "w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/30 transition-all font-medium" })] }), _jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1", children: "Bio" }), _jsx("textarea", { value: bio, onChange: (e) => setBio(e.target.value), rows: 3, className: "w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/30 transition-all font-medium resize-none" })] }), _jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1", children: "University" }), _jsx("input", { type: "text", value: university, onChange: (e) => setUniversity(e.target.value), className: "w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/30 transition-all font-medium" })] })] }), _jsx("button", { type: "submit", disabled: updateProfileMutation.isPending, className: "w-full h-14 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-zinc-200 transition-all active:scale-[0.98] disabled:opacity-50", children: updateProfileMutation.isPending ? (_jsx("div", { className: "w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" })) : saveSuccess ? (_jsx("span", { className: "text-emerald-600", children: "Profile Updated!" })) : (_jsxs(_Fragment, { children: [_jsx(Save, { size: 18 }), _jsx("span", { children: "Save Changes" })] })) })] })] }));
             case 'privacy':
             case 'notifications':
                 return (_jsxs(motion.div, { initial: { opacity: 0, x: 20 }, animate: { opacity: 1, x: 0 }, className: "space-y-6", children: [_jsxs("div", { className: "flex items-center gap-4 mb-8", children: [_jsx("button", { onClick: () => setActiveTab(null), className: "p-2 hover:bg-white/5 rounded-full text-zinc-400", children: _jsx(ChevronLeft, { size: 24 }) }), _jsx("h2", { className: "text-2xl font-black text-white", children: activeTab === 'privacy' ? 'Privacy & Security' : 'Push Notifications' })] }), _jsx("div", { className: "space-y-4", children: [1, 2, 3].map((item) => (_jsxs("div", { className: "p-6 glass-panel rounded-3xl border border-white/5 flex items-center justify-between", children: [_jsxs("div", { children: [_jsxs("h3", { className: "font-bold text-white", children: ["Option ", item] }), _jsx("p", { className: "text-xs text-white/40 mt-1", children: "Configure your preference for this feature." })] }), _jsx("div", { className: "w-12 h-6 bg-white/10 rounded-full relative cursor-pointer group", children: _jsx("div", { className: "absolute left-1 top-1 w-4 h-4 bg-white/40 rounded-full group-hover:bg-white transition-all" }) })] }, item))) })] }));

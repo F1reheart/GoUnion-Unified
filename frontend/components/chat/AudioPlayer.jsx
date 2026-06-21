@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause } from 'lucide-react';
 
-export const AudioPlayer = ({ src, mine }) => {
+export const AudioPlayer = ({ src }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -71,27 +71,27 @@ export const AudioPlayer = ({ src, mine }) => {
     };
 
     return (
-        <div className={`flex items-center gap-3 border rounded-full px-3 py-2 min-w-[200px] shadow-sm ${mine ? 'bg-black/10 border-black/20' : 'bg-white/5 border-[#ffeb3b]/20'}`}>
+        <div className="flex items-center gap-3 bg-[#111114] border border-[#ffeb3b]/20 rounded-full px-3 py-2 min-w-[200px] shadow-sm">
             <audio ref={audioRef} src={src} preload="metadata" />
             
             <button 
                 onClick={togglePlay}
-                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 hover:scale-105 transition-transform ${mine ? 'bg-black text-[#ffeb3b]' : 'bg-[#ffeb3b] text-black'}`}
+                className="w-8 h-8 rounded-full bg-[#ffeb3b] text-black flex items-center justify-center shrink-0 hover:scale-105 transition-transform"
             >
-                {isPlaying ? <Pause size={16} className={mine ? "fill-[#ffeb3b]" : "fill-black"} /> : <Play size={16} className={`ml-1 ${mine ? "fill-[#ffeb3b]" : "fill-black"}`} />}
+                {isPlaying ? <Pause size={16} className="fill-black" /> : <Play size={16} className="ml-1 fill-black" />}
             </button>
             
             <div className="flex-1 flex flex-col justify-center gap-1">
                 <div 
-                    className={`h-1.5 w-full rounded-full overflow-hidden cursor-pointer relative ${mine ? 'bg-black/20' : 'bg-white/10'}`}
+                    className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden cursor-pointer relative"
                     onClick={handleSeek}
                 >
                     <div 
-                        className={`absolute top-0 left-0 h-full rounded-full transition-all duration-100 ease-linear ${mine ? 'bg-black' : 'bg-[#ffeb3b]'}`}
+                        className="absolute top-0 left-0 h-full bg-[#ffeb3b] rounded-full transition-all duration-100 ease-linear"
                         style={{ width: `${progress}%` }}
                     />
                 </div>
-                <div className={`flex justify-between text-[10px] font-medium ${mine ? 'text-black/60' : 'text-white/50'}`}>
+                <div className="flex justify-between text-[10px] text-white/50 font-medium">
                     <span>{formatTime(audioRef.current?.currentTime || 0)}</span>
                     <span>{formatTime(duration)}</span>
                 </div>

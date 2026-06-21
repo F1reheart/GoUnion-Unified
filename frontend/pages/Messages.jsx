@@ -187,9 +187,9 @@ export const Messages = () => {
                 setContactEmails(new Set(contacts.flatMap((contact) => contact.email || []).map(normalizeContactToken).filter(Boolean)));
                 setContactNames(new Set(contacts.flatMap((contact) => contact.name || []).map(normalizeContactToken).filter(Boolean)));
             } else if (navigator.share) {
-                await navigator.share({ title: "Join GoUnion", text: "Hey! I'd love for you to join me on GoUnion. It's a great space to connect. Download the app here:", url: "https://gounion.me/download" });
+                await navigator.share({ title: "Join GoUnion", text: "Join me on GoUnion. Download/open the app and let's connect.", url: "https://gounion.me/download" });
             } else if (navigator.clipboard) {
-                await navigator.clipboard.writeText(`Hey! I'd love for you to join me on GoUnion. It's a great space to connect. Download the app here:\nhttps://gounion.me/download`);
+                await navigator.clipboard.writeText(`Join me on GoUnion.\nhttps://gounion.me/download`);
                 toast("Invite link copied to clipboard.", "success");
             }
         } catch (err) {
@@ -255,14 +255,12 @@ export const Messages = () => {
             const previousMessages = queryClient.getQueryData(["messages", activeChatId]);
             const previousChats = queryClient.getQueryData(["chats"]);
             const previewUrl = file ? URL.createObjectURL(file) : null;
-            const audioPreviewUrl = audioBlob ? URL.createObjectURL(audioBlob) : null;
             
             const optimisticMessage = {
                 id: `temp-${Date.now()}`,
                 content,
                 imageUrl: file && file.type.startsWith("image/") ? previewUrl : null,
                 videoUrl: file && file.type.startsWith("video/") ? previewUrl : null,
-                audioUrl: audioPreviewUrl,
                 stickerUrl: sticker?.url || null,
                 stickerId: sticker?.id || null,
                 fileUrl: file && !file.type.startsWith("image/") && !file.type.startsWith("video/") ? previewUrl : null,
@@ -293,8 +291,8 @@ export const Messages = () => {
         onSuccess: (newServerMsg, _vars, context) => {
             queryClient.setQueryData(["messages", context?.activeChatId], (old) => {
                 const sansTemp = old?.filter((m) => !m.id.toString().startsWith("temp-")) || [];
-                // Compare IDs as strings to prevent duplicate voice notes if socket also fires
-                if (!sansTemp.find(m => String(m.id) === String(newServerMsg.id))) {
+                // Only add if not already present to prevent duplicate voice notes if socket also fires
+                if (!sansTemp.find(m => m.id === newServerMsg.id)) {
                     return [...sansTemp, newServerMsg];
                 }
                 return sansTemp;
@@ -447,19 +445,7 @@ export const Messages = () => {
                                                                 <span className="rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/45 backdrop-blur">{msg.dateLabel}</span>
                                                             </div>
                                                         )}
-                                                        <motion.div 
-                                                            initial={{ opacity: 0, y: 8 }} 
-                                                            animate={{ opacity: 1, y: 0 }} 
-                                                            drag="x"
-                                                            dragConstraints={{ left: 0, right: 0 }}
-                                                            dragElastic={{ left: 0, right: 0.2 }}
-                                                            onDragEnd={(e, info) => {
-                                                                if (info.offset.x > 50) {
-                                                                    setReplyToMsg(msg);
-                                                                }
-                                                            }}
-                                                            className={`flex group ${mine ? "justify-end" : "justify-start"} relative w-full`}
-                                                        >
+                                                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex group ${mine ? "justify-end" : "justify-start"} relative`}>
                                                             <div className={`flex max-w-[82%] flex-col gap-1 sm:max-w-[70%] ${mine ? "items-end" : "items-start"}`}>
                                                                 
                                                                 {/* Context Menu Icon */}
@@ -481,29 +467,28 @@ export const Messages = () => {
                                                                     )}
                                                                 </div>
 
-                                                                <div className={`rounded-2xl px-3 py-2 shadow-md border ${mine ? "bg-primary text-black border-primary/20 rounded-br-md" : "bg-[#111114] text-white border-white/10 rounded-bl-md"}`}>
+                                                                <div className={`rounded-2xl px-3 py-2 shadow-md border ${mine ? "bg-[#111114] text-white border-primary/20" : "bg-white/[0.08] text-white border-white/10"} relative`}>
                                                                     {repliedMsg && (
-                                                                        <div className={`mb-2 p-2 rounded-xl border-l-2 text-xs ${mine ? "bg-black/10 border-black text-black/70" : "bg-black/30 border-primary text-white/70"}`}>
-                                                                            <span className={`font-bold block mb-1 ${mine ? "text-black" : "text-primary"}`}>{String(repliedMsg.senderId) === String(currentUserId) ? "You" : (activeChat?.partner?.fullName || "User")}</span>
-                                                                            {repliedMsg.isDeleted ? <em className={mine ? "text-black/50 italic" : "text-white/40 italic"}>This message was deleted</em> : repliedMsg.content || "Media"}
+                                                                        <div className="mb-2 p-2 bg-black/30 rounded-xl border-l-2 border-primary text-xs text-white/70">
+                                                                            <span className="font-bold text-primary block mb-1">{String(repliedMsg.senderId) === String(currentUserId) ? "You" : activeChat.partner.fullName}</span>
+                                                                            {repliedMsg.isDeleted ? <em className="text-white/40 italic">This message was deleted</em> : repliedMsg.content || "Media content"}
                                                                         </div>
                                                                     )}
 
                                                                     {msg.isDeleted ? (
-                                                                        <p className={`italic text-sm px-1 flex items-center gap-2 ${mine ? "text-black/50" : "text-white/40"}`}><Trash2 size={14}/> This message was deleted</p>
+                                                                        <p className="italic text-white/40 text-sm px-1 flex items-center gap-2"><Trash2 size={14}/> This message was deleted</p>
                                                                     ) : (
                                                                         <>
-                                                                            {(msg.imageUrl || msg.mediaUrl) && <img src={msg.imageUrl || msg.mediaUrl} className="max-h-64 rounded-xl mb-1 object-cover cursor-pointer" alt="" onClick={() => {}} />}
-                                                                            {msg.videoUrl && <MediaPlayer url={msg.videoUrl} maxHeight="256px" autoPlayOnVisible={false} />}
+                                                                            {msg.imageUrl && <img src={msg.imageUrl} className="max-h-80 rounded-md mb-1 object-cover" alt="" />}
+                                                                            {msg.videoUrl && <video src={msg.videoUrl} controls className="max-h-80 rounded-md mb-1" />}
                                                                             {msg.fileUrl && (
-                                                                                <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 p-2 rounded-xl mb-1 ${mine ? "bg-black/10" : "bg-white/5"}`}>
-                                                                                    <FileText size={20} />
-                                                                                    <span className="text-sm truncate max-w-[200px]">{msg.fileName || "Attachment"}</span>
+                                                                                <a href={msg.fileUrl} target="_blank" rel="noreferrer" className="mb-1 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
+                                                                                    <FileText size={18} /> <span className="truncate">{msg.fileName || "Attachment"}</span>
                                                                                 </a>
                                                                             )}
-                                                                            {msg.audioUrl && <AudioPlayer src={msg.audioUrl} mine={mine} />}
+                                                                            {msg.audioUrl && <AudioPlayer src={msg.audioUrl} />}
                                                                             {msg.stickerUrl && <img src={msg.stickerUrl} className="h-24 w-24 object-contain" alt="Sticker" />}
-                                                                            {(msg.content || msg.caption) && <p className={`px-1 pt-1 text-[14px] leading-relaxed whitespace-pre-wrap ${mine ? "text-black" : "text-white"}`}>{msg.content || msg.caption}</p>}
+                                                                            {msg.content && <p className="px-1 pt-1 text-[14px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>}
                                                                         </>
                                                                     )}
                                                                 </div>
@@ -524,6 +509,7 @@ export const Messages = () => {
                                 </div>
                             </div>
 
+                            {/* Reply Indicator UI */}
                             <AnimatePresence>
                                 {replyToMsg && (
                                     <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="absolute bottom-20 left-0 w-full px-4 z-20">
@@ -541,6 +527,7 @@ export const Messages = () => {
                                 )}
                             </AnimatePresence>
 
+                            {/* Chat Input Footer */}
                             <footer className="bg-[#0a0a0c]/95 border-t border-white/5 px-2 py-2 relative z-30">
                                 {attachmentPreview && (
                                     <div className="mx-2 mb-2 w-fit relative">
@@ -560,15 +547,15 @@ export const Messages = () => {
                                         <AnimatePresence>
                                             {isAttachMenuOpen && (
                                                 <motion.div initial={{ opacity: 0, y: 10, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.96 }} className="absolute bottom-14 left-0 rounded-2xl border border-white/10 bg-[#111114] p-2 shadow-2xl flex gap-2">
-                                                    <button onClick={() => { fileInputRef.current.accept="image/*,video/*"; fileInputRef.current?.click(); }} className="h-11 w-11 rounded-xl text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"><ImageIcon size={20} /></button>
+                                                    <button onClick={() => fileInputRef.current?.click()} className="h-11 w-11 rounded-xl text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"><Paperclip size={21} /></button>
+                                                    <button onClick={() => fileInputRef.current?.click()} className="h-11 w-11 rounded-xl text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"><ImageIcon size={20} /></button>
                                                     <button onClick={() => { setIsAttachMenuOpen(false); setIsCameraModalOpen(true); }} className="h-11 w-11 rounded-xl text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"><Camera size={20} /></button>
-                                                    <button onClick={() => { fileInputRef.current.accept="application/pdf,.doc,.docx,.txt,.zip"; fileInputRef.current?.click(); }} className="h-11 w-11 rounded-xl text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"><Paperclip size={21} /></button>
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
                                     </div>
 
-                                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} />
+                                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} accept="image/*,video/*,application/pdf,.doc,.docx,.txt,.zip" />
 
                                     {isVoiceRecording ? (
                                         <VoiceRecorder onSend={(blob) => { setIsVoiceRecording(false); handleSendVoiceNote(blob); }} onCancel={() => setIsVoiceRecording(false)} />
@@ -580,12 +567,9 @@ export const Messages = () => {
                                             
                                             {/* Emoji Picker Dropdown */}
                                             {isEmojiPickerOpen && (
-                                                <>
-                                                    <div className="fixed inset-0 z-40" onClick={() => setIsEmojiPickerOpen(false)} />
-                                                    <div className="absolute bottom-14 left-0 md:left-0 z-50">
-                                                        <EmojiPicker theme={Theme.DARK} onEmojiClick={handleEmojiClick} lazyLoadEmojis={true} style={{ maxWidth: '100vw', maxHeight: '60dvh' }} />
-                                                    </div>
-                                                </>
+                                                <div className="absolute bottom-14 left-0 z-50">
+                                                    <EmojiPicker theme={Theme.DARK} onEmojiClick={handleEmojiClick} lazyLoadEmojis={true} />
+                                                </div>
                                             )}
 
                                             <textarea 

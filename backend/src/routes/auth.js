@@ -83,7 +83,21 @@ authRouter.post(
         user_id: user.id,
         expires_at: new Date(Date.now() + 60 * 60 * 1000),
       });
-      await sendPasswordResetEmail(user, `${env.appUrl}/reset-password?token=${token}`);
+      let baseUrl = env.appUrl;
+      if (req.headers.origin) {
+        baseUrl = req.headers.origin;
+      } else if (req.headers.referer) {
+        try {
+          baseUrl = new URL(req.headers.referer).origin;
+        } catch (err) {}
+      }
+      
+      // Fallback for native mobile app requests (keep it as a web link)
+      if (baseUrl.startsWith('capacitor://') || baseUrl.startsWith('ionic://')) {
+        baseUrl = env.appUrl;
+      }
+
+      await sendPasswordResetEmail(user, `${baseUrl}/reset-password?token=${token}`);
     }
 
     res.json({ status: 'ok', message: 'If the email exists, a reset link has been sent.' });

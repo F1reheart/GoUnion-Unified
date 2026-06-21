@@ -184,7 +184,7 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
                                 _jsx("textarea", { rows: 1, value: content, onChange: (e) => setContent(e.target.value), placeholder: replyTarget ? `Reply to @${replyTarget.user?.username}` : "Write a comment...", className: "min-h-[44px] max-h-28 flex-1 resize-none bg-transparent px-2 py-3 text-sm text-zinc-100 focus:outline-none transition-all placeholder:text-zinc-500 hide-scrollbar" })
                             ]}), 
                             _jsx("button", { type: "submit", disabled: !content.trim() || createCommentMutation.isPending, className: "h-11 w-11 shrink-0 flex items-center justify-center bg-violet-600 text-white rounded-2xl hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-500/20", "aria-label": "Send comment", children: _jsx(Send, { size: 17 }) })
-                        ] })] }));
+                            ] })] })] }));
 };
 const CommentItem = ({ comment, user, startReply, likeCommentMutation }) => {
     const [showReplies, setShowReplies] = useState(false);

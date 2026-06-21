@@ -11,6 +11,11 @@ export const Dashboard = () => {
         await queryClient.invalidateQueries({ queryKey: ["feed"] });
     };
     useEffect(() => {
+        // Start afresh when returning to feed
+        queryClient.removeQueries({ queryKey: ["feed"] });
+    }, [queryClient]);
+
+    useEffect(() => {
         const handleExternalRefresh = () => {
             void refreshFeed();
         };

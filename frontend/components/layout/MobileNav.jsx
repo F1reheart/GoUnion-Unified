@@ -93,46 +93,63 @@ export const MobileNav = () => {
 
             <AnimatePresence>
                 {isMenuOpen && (
-                    <div className="fixed inset-0 z-[150] flex items-end justify-center px-4 pb-28 md:hidden">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMenuOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-                        <motion.div initial={{ y: "100%", opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: "100%", opacity: 0, scale: 0.9 }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="relative w-full max-w-md bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-6 shadow-2xl overflow-hidden">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="font-serif text-2xl text-white">More</h2>
-                                <button onClick={() => setIsMenuOpen(false)} className="p-2 bg-white/5 rounded-full text-zinc-400 hover:text-white transition-colors">
-                                    <X size={20} />
-                                </button>
+                    <div className="fixed inset-0 z-[150] flex items-end justify-center md:hidden pointer-events-none">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMenuOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md pointer-events-auto" />
+                        
+                        <div className="absolute bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-0 w-full h-full pointer-events-none">
+                            <div className="relative w-full h-full max-w-md mx-auto">
+                                {OTHER_ITEMS.map((item, index) => {
+                                    const total = OTHER_ITEMS.length;
+                                    const angle = Math.PI - (index * (Math.PI / (total - 1)));
+                                    const radius = 120;
+                                    const x = Math.cos(angle) * radius;
+                                    const y = -Math.sin(angle) * radius;
+
+                                    return (
+                                        <motion.div
+                                            key={item.path}
+                                            initial={{ x: "-50%", y: 40, opacity: 0, scale: 0 }}
+                                            animate={{ x: `calc(-50% + ${x}px)`, y: y, opacity: 1, scale: 1 }}
+                                            exit={{ x: "-50%", y: 40, opacity: 0, scale: 0 }}
+                                            transition={{ type: "spring", stiffness: 350, damping: 22, delay: index * 0.04 }}
+                                            className="absolute left-1/2 bottom-0 flex flex-col items-center justify-center z-[160] pointer-events-auto"
+                                        >
+                                            <Link
+                                                to={item.path}
+                                                onClick={(e) => {
+                                                    if (item.label === "Alumni") {
+                                                        e.preventDefault();
+                                                        return;
+                                                    }
+                                                    setIsMenuOpen(false);
+                                                }}
+                                                className={`flex items-center justify-center w-[52px] h-[52px] bg-[#111114]/90 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.8)] transition-transform hover:scale-110 relative ${item.label === "Alumni" ? "opacity-80 cursor-not-allowed border-dashed border-white/30" : "hover:bg-white/10"}`}
+                                            >
+                                                <item.icon className={`w-6 h-6 ${item.label === "Alumni" ? "text-white/40" : "text-white"}`} />
+                                                {item.badge > 0 && (
+                                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+                                                        {item.badge > 99 ? '99+' : item.badge}
+                                                    </span>
+                                                )}
+                                                {item.label === "Alumni" && (
+                                                    <span className="absolute -top-3 bg-primary text-black text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-[0_0_10px_rgba(196,255,14,0.4)] whitespace-nowrap z-10 border border-black">
+                                                        Coming Soon
+                                                    </span>
+                                                )}
+                                            </Link>
+                                            <motion.span 
+                                                initial={{ opacity: 0, y: 5 }} 
+                                                animate={{ opacity: 1, y: 0 }} 
+                                                transition={{ delay: 0.15 + index * 0.04 }}
+                                                className="absolute top-14 text-[9px] font-black uppercase tracking-[0.1em] text-white whitespace-nowrap bg-black/60 px-2 py-0.5 rounded-md backdrop-blur-sm border border-white/5"
+                                            >
+                                                {item.label}
+                                            </motion.span>
+                                        </motion.div>
+                                    );
+                                })}
                             </div>
-                            <div className="grid grid-cols-3 gap-3">
-                                {OTHER_ITEMS.map((item) => (
-                                    <Link key={item.path} to={item.path} onClick={(e) => {
-                                        if (item.label === "Alumni") {
-                                            e.preventDefault();
-                                            return;
-                                        }
-                                        setIsMenuOpen(false);
-                                    }} className={`flex flex-col items-center justify-center p-4 bg-white/5 border border-white/5 rounded-3xl transition-all group ${item.label === "Alumni" ? "opacity-50 cursor-not-allowed" : "hover:bg-white/10 hover:border-white/10"}`}>
-                                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform relative">
-                                            <item.icon className="w-6 h-6 text-primary" />
-                                            {item.badge > 0 && (
-                                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
-                                                    {item.badge > 99 ? '99+' : item.badge}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <span className="text-xs font-medium text-white">{item.label}</span>
-                                    </Link>
-                                ))}
-                            </div>
-                            <div className="mt-6 pt-6 border-t border-white/5">
-                                <button onClick={() => {
-                                    logout();
-                                    setIsMenuOpen(false);
-                                    navigate("/login");
-                                }} className="w-full flex items-center justify-center gap-2 p-3.5 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 font-bold text-xs uppercase tracking-widest hover:bg-red-500/20 transition-all">
-                                    <LogOut size={18} /> Logout Session
-                                </button>
-                            </div>
-                        </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>

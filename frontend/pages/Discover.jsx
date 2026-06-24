@@ -99,6 +99,10 @@ export const Discover = () => {
         },
     });
     useEffect(() => {
+        queryClient.removeQueries({ queryKey: ["discover-reels"] });
+    }, [queryClient]);
+
+    useEffect(() => {
         const handleExternalRefresh = () => {
             setDiscoverSeed(Math.random());
             queryClient.removeQueries({ queryKey: ["discover-reels"] });
@@ -160,9 +164,9 @@ export const Discover = () => {
     };
     const reels = Array.from(new Map((data?.pages.flat() || []).map((post) => [post.id, post])).values()).filter((post) => post.isReel || post.mediaType === "video" || isVideoUrl(post.imageUrl));
     if (status === "pending") {
-        return (_jsx("div", { className: "fixed inset-0 md:pl-64 lg:pr-80 bg-black overflow-hidden z-0 pt-16 md:pt-20", children: _jsx("div", { className: "h-full flex items-center justify-center", children: _jsx("div", { className: "w-24 h-24 rounded-3xl bg-white/5 flex items-center justify-center font-serif font-black text-5xl text-white/20 animate-pulse shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-white/10", children: "G" }) }) }));
+        return (_jsx("div", { className: "fixed inset-0 md:pl-64 lg:pr-80 bg-black overflow-hidden z-0", children: _jsx("div", { className: "h-full flex items-center justify-center", children: _jsx("div", { className: "w-24 h-24 rounded-3xl bg-white/5 flex items-center justify-center font-serif font-black text-5xl text-white/20 animate-pulse shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-white/10", children: "G" }) }) }));
     }
-    return (_jsxs("div", { className: "fixed inset-0 md:pl-64 lg:pr-80 bg-black overflow-hidden z-0 pt-16 md:pt-20 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0", children: [_jsxs("div", { className: "h-full overflow-y-auto snap-y snap-mandatory hide-scrollbar", children: [reels.length === 0 ? (_jsxs("div", { className: "h-[100dvh] flex flex-col items-center justify-center text-center p-8", children: [_jsx("h3", { className: "text-2xl font-black text-white mb-3", children: "No reels yet" }), _jsx("p", { className: "text-zinc-500 max-w-xs mb-10 text-sm leading-relaxed", children: "Be the first to share a moment with the campus community!" }), _jsx("button", { type: "button", onClick: () => setIsCreateReelOpen(true), className: "px-10 py-4 bg-primary text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20", children: "Create Reel" })] })) : (reels.map((reel) => {
+    return (_jsxs("div", { className: "fixed inset-0 md:pl-64 lg:pr-80 bg-black overflow-hidden z-0 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0", children: [_jsxs("div", { className: "h-full overflow-y-auto snap-y snap-mandatory hide-scrollbar", children: [reels.length === 0 ? (_jsxs("div", { className: "h-[100dvh] flex flex-col items-center justify-center text-center p-8", children: [_jsx("h3", { className: "text-2xl font-black text-white mb-3", children: "No reels yet" }), _jsx("p", { className: "text-zinc-500 max-w-xs mb-10 text-sm leading-relaxed", children: "Be the first to share a moment with the campus community!" }), _jsx("button", { type: "button", onClick: () => setIsCreateReelOpen(true), className: "px-10 py-4 bg-primary text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20", children: "Create Reel" })] })) : (reels.map((reel) => {
                         const cleanCaption = getCleanCaption(reel.content || "");
                         const overlayText = getOverlayText(reel.content || "");
                         const soundName = getSoundName(reel);

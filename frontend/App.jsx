@@ -46,7 +46,7 @@ const AppLayout = ({ children }) => {
     const isDiscover = location.pathname === '/discover';
     const isMessages = location.pathname === '/messages' || (location.pathname.startsWith('/groups/') && location.pathname !== '/groups');
     const isHomeFeed = location.pathname === '/';
-    return (_jsxs("div", { className: "flex h-screen bg-[#030303] text-white overflow-hidden selection:bg-white/20 relative", children: [!isMessages && _jsx(Sidebar, {}), _jsxs("div", { className: "flex-1 flex flex-col min-w-0 relative", children: [!isMessages && (_jsx("div", { className: "fixed top-0 right-0 left-0 md:left-64 lg:right-80 z-[100]", children: _jsx(TopNav, {}) })), _jsx("main", { className: `flex-1 overflow-y-auto hide-scrollbar ${isMessages ? 'p-0' : `md:pl-64 lg:pr-80 ${isDiscover ? 'pb-0' : 'pb-6'} md:pb-0 pt-16`}`, children: _jsx("div", { className: isMessages
+    return (_jsxs("div", { className: "flex h-screen bg-[#030303] text-white overflow-hidden selection:bg-white/20 relative", children: [!isMessages && _jsx(Sidebar, {}), _jsxs("div", { className: "flex-1 flex flex-col min-w-0 relative", children: [!isMessages && !isDiscover && (_jsx("div", { className: "fixed top-0 right-0 left-0 md:left-64 lg:right-80 z-[100]", children: _jsx(TopNav, {}) })), _jsx("main", { className: `flex-1 overflow-y-auto hide-scrollbar ${isMessages ? 'p-0' : `md:pl-64 lg:pr-80 ${isDiscover ? 'pb-0' : 'pb-6'} md:pb-0 pt-16`}`, children: _jsx("div", { className: isMessages
                                 ? "h-full w-full"
                                 : isHomeFeed
                                     ? "w-full py-4 md:px-8 md:py-6"

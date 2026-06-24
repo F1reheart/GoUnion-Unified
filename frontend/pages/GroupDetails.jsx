@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply } from "lucide-react";
+import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api, getApiErrorMessage } from "../services/api";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -347,18 +347,29 @@ export const GroupDetails = () => {
                                                             <span className="rounded-full bg-black/60 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/45 backdrop-blur">{getDateLabel(msgDate)}</span>
                                                         </div>
                                                     )}
-                                                    <div className={`flex group ${mine ? "justify-end" : "justify-start"} relative`}>
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: 8 }} 
+                                                        animate={{ opacity: 1, y: 0 }} 
+                                                        drag="x"
+                                                        dragConstraints={{ left: 0, right: 0 }}
+                                                        dragElastic={{ left: 0, right: 0.2 }}
+                                                        onDragEnd={(e, info) => {
+                                                            if (info.offset.x > 50) {
+                                                                setReplyToMsg(msg);
+                                                            }
+                                                        }}
+                                                        className={`flex group ${mine ? "justify-end" : "justify-start"} relative w-full`}
+                                                    >
                                                         <div className={`flex max-w-[85%] gap-2 sm:max-w-[75%] ${mine ? "flex-row-reverse" : "flex-row"}`}>
-                                                            
                                                             {!mine && (
                                                                 <div className="shrink-0 mt-auto mb-1">
                                                                     <Avatar src={msg.author?.avatarUrl} alt={msg.author?.fullName || msg.author?.username} label={msg.author?.fullName || msg.author?.username} className="h-7 w-7 rounded-full object-cover bg-white/10" />
                                                                 </div>
                                                             )}
-                                                            
-                                                            <div className={`flex flex-col gap-0.5 relative ${mine ? "items-end" : "items-start"}`}>
+                                                            <div className={`flex flex-col gap-1 ${mine ? "items-end" : "items-start"}`}>
+                                                                
                                                                 {/* Context Menu Icon */}
-                                                                <div className={`absolute top-2 ${mine ? "-left-10" : "-right-10"} opacity-0 group-hover:opacity-100 transition-opacity z-20`}>
+                                                                <div className={`absolute top-2 ${mine ? "-left-10" : "-right-10"} opacity-0 group-hover:opacity-100 transition-opacity`}>
                                                                     <button onClick={(e) => { e.stopPropagation(); setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id); }} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white shadow">
                                                                         <MoreVertical size={14} />
                                                                     </button>
@@ -377,24 +388,24 @@ export const GroupDetails = () => {
                                                                 </div>
 
                                                                 {!mine && <span className="text-[10px] font-bold text-primary/70 px-2">{msg.author?.fullName || msg.author?.username || "Member"}</span>}
-                                                                
-                                                                <div className={`rounded-2xl px-3 py-2 shadow-md border ${mine ? "bg-[#111114] text-white border-primary/20 rounded-br-md" : "bg-white/[0.08] text-white border-white/10 rounded-bl-md"}`}>
+
+                                                                <div className={`rounded-2xl px-3 py-2 shadow-md border ${mine ? "bg-primary text-black border-primary/20 rounded-br-md" : "bg-[#111114] text-white border-white/10 rounded-bl-md"}`}>
                                                                     {repliedMsg && (
-                                                                        <div className="mb-2 p-2 bg-black/30 rounded-xl border-l-2 border-primary text-xs text-white/70">
-                                                                            <span className="font-bold text-primary block mb-1">{String(repliedMsg.author?.id) === String(currentUserId) ? "You" : repliedMsg.author?.fullName}</span>
-                                                                            {repliedMsg.isDeleted ? <em className="text-white/40 italic">This message was deleted</em> : repliedMsg.content || "Media"}
+                                                                        <div className={`mb-2 p-2 rounded-xl border-l-2 text-xs ${mine ? "bg-black/10 border-black text-black/70" : "bg-black/30 border-primary text-white/70"}`}>
+                                                                            <span className={`font-bold block mb-1 ${mine ? "text-black" : "text-primary"}`}>{String(repliedMsg.author?.id) === String(currentUserId) ? "You" : repliedMsg.author?.fullName}</span>
+                                                                            {repliedMsg.isDeleted ? <em className={mine ? "text-black/50 italic" : "text-white/40 italic"}>This message was deleted</em> : repliedMsg.content || "Media"}
                                                                         </div>
                                                                     )}
 
                                                                     {msg.isDeleted ? (
-                                                                        <p className="italic text-white/40 text-sm px-1 flex items-center gap-2"><Trash2 size={14}/> This message was deleted</p>
+                                                                        <p className={`italic text-sm px-1 flex items-center gap-2 ${mine ? "text-black/50" : "text-white/40"}`}><Trash2 size={14}/> This message was deleted</p>
                                                                     ) : (
                                                                         <>
-                                                                            {(msg.imageUrl || msg.mediaUrl) && <img src={msg.imageUrl || msg.mediaUrl} className="max-h-64 rounded-xl mb-1 object-cover" alt="" />}
-                                                                            {msg.videoUrl && <video src={msg.videoUrl} controls className="max-h-64 rounded-xl mb-1" />}
-                                                                            {msg.audioUrl && <AudioPlayer src={msg.audioUrl} />}
+                                                                            {(msg.imageUrl || msg.mediaUrl) && <img src={msg.imageUrl || msg.mediaUrl} className="max-h-64 rounded-xl mb-1 object-cover cursor-pointer" alt="" onClick={() => {}} />}
+                                                                            {msg.videoUrl && <MediaPlayer url={msg.videoUrl} maxHeight="256px" autoPlayOnVisible={false} />}
+                                                                            {msg.audioUrl && <AudioPlayer src={msg.audioUrl} mine={mine} />}
                                                                             {msg.stickerUrl && <img src={msg.stickerUrl} className="h-24 w-24 object-contain" alt="Sticker" />}
-                                                                            {(msg.content || msg.caption) && <p className="px-1 pt-1 text-[14px] leading-relaxed whitespace-pre-wrap">{msg.content || msg.caption}</p>}
+                                                                            {(msg.content || msg.caption) && <p className={`px-1 pt-1 text-[14px] leading-relaxed whitespace-pre-wrap ${mine ? "text-black" : "text-white"}`}>{msg.content || msg.caption}</p>}
                                                                         </>
                                                                     )}
                                                                 </div>
@@ -404,7 +415,7 @@ export const GroupDetails = () => {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </motion.div>
                                                 </React.Fragment>
                                             );
                                         })
@@ -468,9 +479,12 @@ export const GroupDetails = () => {
                                                 </button>
                                                 
                                                 {isEmojiPickerOpen && (
-                                                    <div className="absolute bottom-14 left-0 z-50">
-                                                        <EmojiPicker theme={Theme.DARK} onEmojiClick={handleEmojiClick} lazyLoadEmojis={true} />
-                                                    </div>
+                                                    <>
+                                                        <div className="fixed inset-0 z-40" onClick={() => setIsEmojiPickerOpen(false)} />
+                                                        <div className="absolute bottom-14 left-0 md:left-0 z-50">
+                                                            <EmojiPicker theme={Theme.DARK} onEmojiClick={handleEmojiClick} lazyLoadEmojis={true} style={{ maxWidth: '100vw', maxHeight: '60dvh' }} />
+                                                        </div>
+                                                    </>
                                                 )}
 
                                                 <textarea 

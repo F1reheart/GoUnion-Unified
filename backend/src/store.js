@@ -155,9 +155,17 @@ export const serializeMessage = async (messageOrDoc) => {
 export const serializeConversation = async (conversationOrDoc) => {
   const conversation = toPlain(conversationOrDoc);
   const messages = await Message.find({ conversation_id: conversation.id }).sort({ created_at: 1 });
+  
+  const resolvedParticipants = await Promise.all(
+    (conversation.participant_ids || []).map(async (id) => {
+      const user = await publicUser(id);
+      return user || { id, username: 'deleted_user', full_name: 'Deleted User', profile: { full_name: 'Deleted User' } };
+    })
+  );
+
   return {
     ...conversation,
-    participants: await Promise.all((conversation.participant_ids || []).map((id) => publicUser(id))),
+    participants: resolvedParticipants,
     messages: await Promise.all(messages.map(serializeMessage)),
   };
 };

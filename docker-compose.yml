@@ -32,6 +32,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
     networks:
       - gounion-network
     restart: unless-stopped
@@ -55,3 +57,4 @@ networks:
 
 volumes:
   mongodb_data:
+  uploads_data:

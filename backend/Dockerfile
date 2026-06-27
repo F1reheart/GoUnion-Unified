@@ -17,6 +17,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY package*.json ./
 COPY src ./src
 
+# Create uploads directory for local file storage fallback
+RUN mkdir -p /app/uploads && chown appuser:appgroup /app/uploads
+
 # Switch to non-root user
 USER appuser
 

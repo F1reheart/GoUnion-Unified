@@ -97,3 +97,12 @@ postsRouter.post(
     res.status(201).json(await serializeComment(comment, req.user.id));
   }),
 );
+
+postsRouter.post(
+  '/:id/view',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    // Frontend hits this to track views, returning 200 OK
+    res.json({ status: 'ok' });
+  }),
+);

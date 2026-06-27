@@ -1,0 +1,57 @@
+services:
+  database:
+    image: mongo:7
+    container_name: gounion_database
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - gounion-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gounion_backend
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./backend/.env
+    environment:
+      - PORT=8001
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://database:27017/gounion
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - gounion-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gounion_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - gounion-network
+    restart: unless-stopped
+
+networks:
+  gounion-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

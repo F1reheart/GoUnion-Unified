@@ -1,0 +1,10 @@
+# Root-level Docker ignore
+.git
+.gitignore
+*.md
+infra/
+**/.env
+**/.env.*
+**/node_modules
+**/dist
+**/build

@@ -444,7 +444,7 @@ export const GroupDetails = () => {
 
                             {/* Chat Input Footer */}
                             {isMember ? (
-                                <footer className="bg-[#0a0a0c]/95 border-t border-white/5 px-2 py-2 shrink-0 z-30 relative">
+                                <footer className="bg-[#0a0a0c]/95 border-t border-white/5 px-2 py-2 shrink-0 z-30 relative flex flex-col gap-2">
                                     {attachmentPreview && (
                                         <div className="mx-2 mb-2 w-fit relative">
                                             {attachment?.type?.startsWith("video/") ? <video src={attachmentPreview} className="h-28 rounded-lg border border-white/10" /> : <img src={attachmentPreview} className="h-28 rounded-lg border border-white/10 object-cover" alt="" />}
@@ -477,15 +477,6 @@ export const GroupDetails = () => {
                                                 <button onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)} className="h-11 w-11 rounded-xl text-white/55 hover:text-white flex items-center justify-center transition-colors shrink-0">
                                                     <Smile size={22} className={isEmojiPickerOpen ? "text-primary" : ""} />
                                                 </button>
-                                                
-                                                {isEmojiPickerOpen && (
-                                                    <>
-                                                        <div className="fixed inset-0 z-40" onClick={() => setIsEmojiPickerOpen(false)} />
-                                                        <div className="absolute bottom-14 left-0 md:left-0 z-50">
-                                                            <EmojiPicker theme={Theme.DARK} onEmojiClick={handleEmojiClick} lazyLoadEmojis={true} style={{ maxWidth: '100vw', maxHeight: '60dvh' }} />
-                                                        </div>
-                                                    </>
-                                                )}
 
                                                 <textarea 
                                                     value={messageText} 
@@ -508,6 +499,17 @@ export const GroupDetails = () => {
                                             </div>
                                         )}
                                     </div>
+
+                                    {isEmojiPickerOpen && (
+                                        <div className="w-full overflow-hidden flex justify-center border-t border-white/5 pt-2 mt-1 animate-in slide-in-from-bottom duration-200">
+                                            <EmojiPicker 
+                                                theme={Theme.DARK} 
+                                                onEmojiClick={handleEmojiClick} 
+                                                lazyLoadEmojis={true} 
+                                                style={{ width: '100%', height: '350px', border: 'none', background: 'transparent' }} 
+                                            />
+                                        </div>
+                                    )}
                                 </footer>
                             ) : !isPending ? (
                                 <div className="bg-[#0a0a0c]/95 border-t border-white/5 px-4 py-4 text-center shrink-0">

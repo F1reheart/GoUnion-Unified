@@ -243,7 +243,7 @@ export const Messages = () => {
 
     const sendMessageMutation = useMutation({
         mutationFn: ({ chatId, content, file, audioBlob, sticker, replyToId }) => api.chats.sendMessage(chatId, content, file, audioBlob, sticker, replyToId),
-        onMutate: async ({ content, file, sticker, replyToId }) => {
+        onMutate: async ({ content, file, audioBlob, sticker, replyToId }) => {
             const activeChatId = selectedChatId;
             setMessageText("");
             clearAttachment();

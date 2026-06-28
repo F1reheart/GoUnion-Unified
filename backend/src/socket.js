@@ -27,6 +27,14 @@ export const initSocket = (server) => {
 
     const markOffline = async (userId) => {
       if (!userId) return;
+      
+      // Check if user still has other active connections
+      const userRoom = io.sockets.adapter.rooms.get(`user:${userId}`);
+      if (userRoom && userRoom.size > 0) {
+        // Still active in other sockets/tabs
+        return;
+      }
+      
       const lastSeen = new Date();
       await User.updateOne({ id: String(userId) }, { is_online: false, last_seen: lastSeen });
       socket.broadcast.emit('user_offline', {

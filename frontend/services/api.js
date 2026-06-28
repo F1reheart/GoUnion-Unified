@@ -833,6 +833,10 @@ export const api = {
             const res = await apiClient.delete(`/messages/${messageId}`);
             return res.data;
         },
+        markRead: async (conversationId) => {
+            const res = await apiClient.post(`/conversations/${conversationId}/read`);
+            return res.data;
+        },
         createConversation: async (participantIds, name) => {
             const currentUserId = authStorage.getItem('user_id');
             // First check if a conversation with this user already exists

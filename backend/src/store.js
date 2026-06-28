@@ -152,13 +152,24 @@ export const serializeMessage = async (messageOrDoc) => {
   };
 };
 
-export const serializeConversation = async (conversationOrDoc) => {
+export const serializeConversation = async (conversationOrDoc, viewerId = null) => {
   const conversation = toPlain(conversationOrDoc);
   const messages = await Message.find({ conversation_id: conversation.id }).sort({ created_at: 1 });
+  
+  let unreadCount = 0;
+  if (viewerId) {
+    unreadCount = await Message.countDocuments({
+      conversation_id: conversation.id,
+      sender_id: { $ne: viewerId },
+      is_read: false,
+    });
+  }
+
   return {
     ...conversation,
-    participants: await Promise.all((conversation.participant_ids || []).map((id) => publicUser(id))),
+    participants: await Promise.all((conversation.participant_ids || []).map((id) => publicUser(id, viewerId))),
     messages: await Promise.all(messages.map(serializeMessage)),
+    unread_count: unreadCount,
   };
 };
 

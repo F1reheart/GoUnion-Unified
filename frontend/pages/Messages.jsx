@@ -137,6 +137,22 @@ export const Messages = () => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }, [messages, selectedChatId]);
 
+    useEffect(() => {
+        if (!selectedChatId || selectedChatId.startsWith("temp-")) return;
+        const hasUnread = messages.some(m => !m.isRead && String(m.senderId) !== String(currentUserId));
+        if (hasUnread) {
+            api.chats.markRead(selectedChatId).then(() => {
+                queryClient.invalidateQueries({ queryKey: ["chats"] });
+                queryClient.invalidateQueries({ queryKey: ["messages", selectedChatId] });
+                queryClient.invalidateQueries({ queryKey: ["notifications-unread"] });
+            }).catch(console.error);
+        }
+    }, [selectedChatId, messages, currentUserId, queryClient]);
+
+    const firstUnreadIndex = useMemo(() => {
+        return messages.findIndex(m => !m.isRead && String(m.senderId) !== String(currentUserId));
+    }, [messages, currentUserId]);
+
     const selectedChat = chats.find((chat) => chat.id === selectedChatId);
     const activeChat = selectedChat || (pendingChat?.id === selectedChatId ? pendingChat : null);
     const isTempChat = Boolean(selectedChatId?.startsWith("temp-"));
@@ -447,6 +463,13 @@ export const Messages = () => {
                                                                 <span className="rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/45 backdrop-blur">{msg.dateLabel}</span>
                                                             </div>
                                                         )}
+                                                        {index === firstUnreadIndex && (
+                                                            <div className="flex items-center gap-4 my-4 w-full px-2">
+                                                                <div className="flex-1 h-px bg-primary/20"></div>
+                                                                <span className="text-[9px] font-black uppercase tracking-widest text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md shadow-[0_0_10px_rgba(196,255,14,0.1)]">New Messages</span>
+                                                                <div className="flex-1 h-px bg-primary/20"></div>
+                                                            </div>
+                                                        )}
                                                         <motion.div 
                                                             initial={{ opacity: 0, y: 8 }} 
                                                             animate={{ opacity: 1, y: 0 }} 
@@ -481,7 +504,7 @@ export const Messages = () => {
                                                                     )}
                                                                 </div>
 
-                                                                <div className={`rounded-2xl px-3 py-2 shadow-md border ${mine ? "bg-primary text-black border-primary/20 rounded-br-md" : "bg-[#111114] text-white border-white/10 rounded-bl-md"}`}>
+                                                                <div className={`rounded-2xl px-3 py-2 shadow-md border ${mine ? "bg-primary text-black border-primary/20 rounded-br-md" : (!msg.isRead ? "bg-[#151512] text-white border-primary/20 rounded-bl-md shadow-[0_0_15px_rgba(196,255,14,0.04)]" : "bg-[#111114] text-white border-white/10 rounded-bl-md")}`}>
                                                                     {repliedMsg && (
                                                                         <div className={`mb-2 p-2 rounded-xl border-l-2 text-xs ${mine ? "bg-black/10 border-black text-black/70" : "bg-black/30 border-primary text-white/70"}`}>
                                                                             <span className={`font-bold block mb-1 ${mine ? "text-black" : "text-primary"}`}>{String(repliedMsg.senderId) === String(currentUserId) ? "You" : (activeChat?.partner?.fullName || "User")}</span>

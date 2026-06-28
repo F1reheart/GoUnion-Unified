@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical } from "lucide-react";
+import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api, getApiErrorMessage } from "../services/api";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -34,6 +34,7 @@ export const GroupDetails = () => {
 
     const bottomRef = useRef(null);
     const fileInputRef = useRef(null);
+    const inputRef = useRef(null);
     const currentUserId = authStorage.getItem("user_id");
 
     const { data: group, isLoading: isGroupLoading } = useQuery({
@@ -474,14 +475,30 @@ export const GroupDetails = () => {
                                             <VoiceRecorder onSend={(blob) => { setIsVoiceRecording(false); handleSendVoiceNote(blob); }} onCancel={() => setIsVoiceRecording(false)} />
                                         ) : (
                                             <div className="flex-1 flex items-center bg-[#111114] border border-white/10 rounded-2xl relative">
-                                                <button onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)} className="h-11 w-11 rounded-xl text-white/55 hover:text-white flex items-center justify-center transition-colors shrink-0">
-                                                    <Smile size={22} className={isEmojiPickerOpen ? "text-primary" : ""} />
+                                                <button 
+                                                    onClick={() => {
+                                                        if (isEmojiPickerOpen) {
+                                                            setIsEmojiPickerOpen(false);
+                                                            inputRef.current?.focus();
+                                                        } else {
+                                                            setIsEmojiPickerOpen(true);
+                                                        }
+                                                    }} 
+                                                    className="h-11 w-11 rounded-xl text-white/55 hover:text-white flex items-center justify-center transition-colors shrink-0"
+                                                >
+                                                    {isEmojiPickerOpen ? (
+                                                        <Keyboard size={22} className="text-primary animate-in zoom-in duration-200" />
+                                                    ) : (
+                                                        <Smile size={22} className="animate-in zoom-in duration-200" />
+                                                    )}
                                                 </button>
 
                                                 <textarea 
+                                                    ref={inputRef}
                                                     value={messageText} 
                                                     onChange={(e) => setMessageText(e.target.value)} 
                                                     onKeyDown={handleKeyPress} 
+                                                    onFocus={() => setIsEmojiPickerOpen(false)}
                                                     placeholder="Type a message..." 
                                                     className="min-h-[44px] max-h-32 w-full bg-transparent px-2 py-3 text-[14px] text-white placeholder:text-white/35 outline-none resize-none hide-scrollbar"
                                                     rows={1}

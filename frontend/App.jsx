@@ -331,6 +331,9 @@ const useNotificationPopups = () => {
                     case 'comment':
                         msg = "commented on your post.";
                         break;
+                    case 'like_comment':
+                        msg = "liked your comment.";
+                        break;
                     case 'follow':
                         msg = "started following you.";
                         break;

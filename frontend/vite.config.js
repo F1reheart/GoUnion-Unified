@@ -50,7 +50,7 @@ export default defineConfig(({ mode }) => {
                     skipWaiting: true,
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
                     navigateFallback: '/index.html',
-                    navigateFallbackAllowlist: [/^(?!\/__).*/],
+                    navigateFallbackAllowlist: [/^(?!\/__|\/api).*/],
                     runtimeCaching: [
                         {
                             urlPattern: /^https:\/\/ui-avatars\.com\/.*/i,

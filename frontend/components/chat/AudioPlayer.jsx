@@ -89,7 +89,7 @@ export const AudioPlayer = ({ src, mine, senderAvatar, senderName }) => {
     const waveformBars = [10, 16, 12, 6, 18, 14, 10, 14, 8, 16, 12, 18, 6, 12, 10, 14, 8, 12];
 
     return (
-        <div className={`flex items-center gap-3 rounded-2xl p-3 min-w-[280px] max-w-[320px] shadow-sm select-none ${mine ? 'bg-primary/10 border border-primary/20 text-[#c4ff0e]' : 'bg-[#151518] border border-white/10 text-white'}`}>
+        <div className={`flex items-center gap-3 rounded-2xl p-3 min-w-[280px] max-w-[320px] shadow-sm select-none ${mine ? 'bg-black/5 border border-black/10 text-black' : 'bg-[#151518] border border-white/10 text-white'}`}>
             <audio ref={audioRef} src={src} preload="metadata" />
             
             {/* Left: Avatar with mini badge */}
@@ -99,8 +99,8 @@ export const AudioPlayer = ({ src, mine, senderAvatar, senderName }) => {
                     label={senderName || "User"} 
                     className="w-10 h-10 rounded-full border border-white/10 object-cover" 
                 />
-                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#151518] ${mine ? 'bg-primary' : 'bg-primary/80'}`}>
-                    <Mic size={10} className="text-black" />
+                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 ${mine ? 'border-primary bg-black' : 'border-[#151518] bg-primary'}`}>
+                    <Mic size={10} className={mine ? "text-primary" : "text-black"} />
                 </div>
             </div>
 
@@ -110,9 +110,9 @@ export const AudioPlayer = ({ src, mine, senderAvatar, senderName }) => {
                     {/* Play / Pause */}
                     <button 
                         onClick={togglePlay}
-                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 hover:scale-105 transition-all ${mine ? 'bg-primary text-black' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 hover:scale-105 transition-all ${mine ? 'bg-black text-primary' : 'bg-white/10 hover:bg-white/20 text-white'}`}
                     >
-                        {isPlaying ? <Pause size={14} className={mine ? "fill-black text-black" : "fill-white text-white"} /> : <Play size={14} className={`ml-0.5 ${mine ? "fill-black text-black" : "fill-white text-white"}`} />}
+                        {isPlaying ? <Pause size={14} className={mine ? "fill-primary text-primary" : "fill-white text-white"} /> : <Play size={14} className={`ml-0.5 ${mine ? "fill-primary text-primary" : "fill-white text-white"}`} />}
                     </button>
 
                     {/* Waveform Progress */}
@@ -130,10 +130,10 @@ export const AudioPlayer = ({ src, mine, senderAvatar, senderName }) => {
                                     style={{ 
                                         height: `${height}px`,
                                         backgroundColor: isActive 
-                                            ? '#c4ff0e' 
-                                            : (mine ? 'rgba(196, 255, 14, 0.2)' : 'rgba(255, 255, 255, 0.2)')
+                                            ? (mine ? '#000000' : '#c4ff0e') 
+                                            : (mine ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.2)')
                                     }}
-                                />
+                                 />
                             );
                         })}
                     </div>
@@ -141,7 +141,7 @@ export const AudioPlayer = ({ src, mine, senderAvatar, senderName }) => {
                     {/* Speed Toggle */}
                     <button 
                         onClick={togglePlaybackRate} 
-                        className={`text-[9px] font-black px-1.5 py-0.5 rounded border border-transparent transition-all select-none hover:scale-105 shrink-0 ${mine ? 'bg-primary/20 text-[#c4ff0e] hover:bg-primary/30' : 'bg-white/5 border-white/10 hover:bg-white/15 text-white/90'}`}
+                        className={`text-[9px] font-black px-1.5 py-0.5 rounded border border-transparent transition-all select-none hover:scale-105 shrink-0 ${mine ? 'bg-black/10 border-black/10 hover:bg-black/20 text-black' : 'bg-white/5 border-white/10 hover:bg-white/15 text-white/90'}`}
                     >
                         {playbackRate}x
                     </button>
@@ -149,10 +149,10 @@ export const AudioPlayer = ({ src, mine, senderAvatar, senderName }) => {
 
                 {/* Subtext info */}
                 <div className="flex justify-between items-center text-[9px] font-bold tracking-wider leading-none">
-                    <span className={mine ? 'text-[#c4ff0e]/60' : 'text-white/45'}>
+                    <span className={mine ? 'text-black/60' : 'text-white/45'}>
                         {formatTime(audioRef.current?.currentTime || 0)}
                     </span>
-                    <span className={mine ? 'text-[#c4ff0e]/60' : 'text-white/45'}>
+                    <span className={mine ? 'text-black/60' : 'text-white/45'}>
                         {formatTime(duration)}
                     </span>
                 </div>

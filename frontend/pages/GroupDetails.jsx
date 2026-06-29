@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard } from "lucide-react";
+import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard, Maximize2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api, getApiErrorMessage } from "../services/api";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -15,6 +15,7 @@ import { AudioPlayer } from "../components/chat/AudioPlayer";
 import { MediaPlayer } from "../components/ui/MediaPlayer";
 import { CameraModal } from "../components/chat/CameraModal";
 import EmojiPicker, { Theme } from 'emoji-picker-react';
+import { MediaModal } from "../components/ui/MediaModal";
 
 export const GroupDetails = () => {
     const { id } = useParams();
@@ -36,7 +37,10 @@ export const GroupDetails = () => {
     const [replyToMsg, setReplyToMsg] = useState(null);
     const [editName, setEditName] = useState("");
     const [editDescription, setEditDescription] = useState("");
+    const [selectedMedia, setSelectedMedia] = useState(null);
     const [editPrivacy, setEditPrivacy] = useState("public");
+
+
 
 
     const bottomRef = useRef(null);
@@ -435,8 +439,26 @@ export const GroupDetails = () => {
                                                                         <p className={`italic text-sm px-1 flex items-center gap-2 ${mine ? "text-black/50" : "text-white/40"}`}><Trash2 size={14}/> This message was deleted</p>
                                                                     ) : (
                                                                         <>
-                                                                            {(msg.imageUrl || msg.mediaUrl) && <img src={msg.imageUrl || msg.mediaUrl} className="max-h-64 rounded-xl mb-1 object-cover cursor-pointer" alt="" onClick={() => {}} />}
-                                                                            {msg.videoUrl && <MediaPlayer url={msg.videoUrl} maxHeight="256px" autoPlayOnVisible={false} />}
+                                                                            {(msg.imageUrl || msg.mediaUrl) && (
+                                                                                <img 
+                                                                                    src={msg.imageUrl || msg.mediaUrl} 
+                                                                                    className="max-h-64 rounded-xl mb-1 object-cover cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform" 
+                                                                                    alt="" 
+                                                                                    onClick={() => setSelectedMedia({ url: msg.imageUrl || msg.mediaUrl, type: 'image', name: msg.fileName || 'Image' })} 
+                                                                                />
+                                                                            )}
+                                                                            {msg.videoUrl && (
+                                                                                <div className="relative group/video rounded-xl overflow-hidden mb-1">
+                                                                                    <MediaPlayer url={msg.videoUrl} maxHeight="256px" autoPlayOnVisible={false} />
+                                                                                    <button 
+                                                                                        onClick={() => setSelectedMedia({ url: msg.videoUrl, type: 'video', name: msg.fileName || 'Video' })}
+                                                                                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/video:opacity-100 transition-opacity z-10 cursor-pointer"
+                                                                                        title="View Fullscreen"
+                                                                                    >
+                                                                                        <Maximize2 size={14} />
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
                                                                             {msg.audioUrl && (
                                                                                 <AudioPlayer 
                                                                                     src={msg.audioUrl} 
@@ -730,6 +752,16 @@ export const GroupDetails = () => {
             </AnimatePresence>
 
             {isCameraModalOpen && <CameraModal onCapture={handleCameraCapture} onClose={() => setIsCameraModalOpen(false)} />}
+
+            {selectedMedia && (
+                <MediaModal 
+                    isOpen={!!selectedMedia} 
+                    onClose={() => setSelectedMedia(null)} 
+                    mediaUrl={selectedMedia.url} 
+                    mediaType={selectedMedia.type} 
+                    fileName={selectedMedia.name} 
+                />
+            )}
         </div>
     );
 };

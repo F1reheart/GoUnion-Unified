@@ -99,13 +99,9 @@ export const Discover = () => {
         },
     });
     useEffect(() => {
-        queryClient.removeQueries({ queryKey: ["discover-reels"] });
-    }, [queryClient]);
-
-    useEffect(() => {
         const handleExternalRefresh = () => {
             setDiscoverSeed(Math.random());
-            queryClient.removeQueries({ queryKey: ["discover-reels"] });
+            queryClient.invalidateQueries({ queryKey: ["discover-reels"] });
             window.scrollTo({ top: 0, behavior: "smooth" });
         };
         window.addEventListener("gounion-refresh-discover", handleExternalRefresh);

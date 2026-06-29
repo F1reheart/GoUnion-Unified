@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard, Maximize2 } from "lucide-react";
+import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard, Maximize2, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api, getApiErrorMessage } from "../services/api";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -16,6 +16,16 @@ import { MediaPlayer } from "../components/ui/MediaPlayer";
 import { CameraModal } from "../components/chat/CameraModal";
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { MediaModal } from "../components/ui/MediaModal";
+
+const isVideoUrl = (url) => {
+    if (!url) return false;
+    return /\.(mp4|webm|mov|m4v|avi|mkv|3gp)(\?|$)/i.test(url);
+};
+
+const isImageUrl = (url) => {
+    if (!url) return false;
+    return /\.(jpeg|jpg|gif|png|webp|svg|bmp)(\?|$)/i.test(url);
+};
 
 export const GroupDetails = () => {
     const { id } = useParams();
@@ -439,15 +449,76 @@ export const GroupDetails = () => {
                                                                         <p className={`italic text-sm px-1 flex items-center gap-2 ${mine ? "text-black/50" : "text-white/40"}`}><Trash2 size={14}/> This message was deleted</p>
                                                                     ) : (
                                                                         <>
-                                                                            {(msg.imageUrl || msg.mediaUrl) && (
-                                                                                <img 
-                                                                                    src={msg.imageUrl || msg.mediaUrl} 
-                                                                                    className="max-h-64 rounded-xl mb-1 object-cover cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform" 
-                                                                                    alt="" 
-                                                                                    onClick={() => setSelectedMedia({ url: msg.imageUrl || msg.mediaUrl, type: 'image', name: msg.fileName || 'Image' })} 
-                                                                                />
-                                                                            )}
-                                                                            {msg.videoUrl && (
+                                                                            {(() => {
+                                                                                const mediaUrl = msg.imageUrl || msg.mediaUrl;
+                                                                                if (!mediaUrl) return null;
+                                                                                
+                                                                                if (isImageUrl(mediaUrl)) {
+                                                                                    return (
+                                                                                        <img 
+                                                                                            src={mediaUrl} 
+                                                                                            className="max-h-64 rounded-xl mb-1 object-cover cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform" 
+                                                                                            alt="" 
+                                                                                            onClick={() => setSelectedMedia({ url: mediaUrl, type: 'image', name: msg.fileName || 'Image' })} 
+                                                                                        />
+                                                                                    );
+                                                                                } else if (isVideoUrl(mediaUrl) || msg.videoUrl) {
+                                                                                    const vUrl = msg.videoUrl || mediaUrl;
+                                                                                    return (
+                                                                                        <div className="relative group/video rounded-xl overflow-hidden mb-1">
+                                                                                            <MediaPlayer url={vUrl} maxHeight="256px" autoPlayOnVisible={false} />
+                                                                                            <button 
+                                                                                                onClick={() => setSelectedMedia({ url: vUrl, type: 'video', name: msg.fileName || 'Video' })}
+                                                                                                className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/video:opacity-100 transition-opacity z-10 cursor-pointer"
+                                                                                                title="View Fullscreen"
+                                                                                            >
+                                                                                                <Maximize2 size={14} />
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    );
+                                                                                } else {
+                                                                                    // It's a generic file attachment!
+                                                                                    return (
+                                                                                        <div className={`flex items-center gap-2 p-1.5 rounded-xl mb-1 ${mine ? "bg-black/10 text-black" : "bg-white/5 text-white"}`}>
+                                                                                            <button 
+                                                                                                onClick={(e) => {
+                                                                                                    e.preventDefault();
+                                                                                                    setSelectedMedia({ url: mediaUrl, type: 'file', name: msg.fileName || 'Attachment' });
+                                                                                                }}
+                                                                                                className="flex-1 flex items-center gap-2 p-1 text-left cursor-pointer hover:opacity-80 transition-all min-w-0"
+                                                                                            >
+                                                                                                <FileText size={20} className="shrink-0" />
+                                                                                                <span className="text-sm truncate">{msg.fileName || "Attachment"}</span>
+                                                                                            </button>
+                                                                                            <button 
+                                                                                                onClick={(e) => {
+                                                                                                    e.preventDefault();
+                                                                                                    fetch(mediaUrl)
+                                                                                                        .then(r => r.blob())
+                                                                                                        .then(blob => {
+                                                                                                            const url = window.URL.createObjectURL(blob);
+                                                                                                            const link = document.createElement('a');
+                                                                                                            link.href = url;
+                                                                                                            link.setAttribute('download', msg.fileName || 'download');
+                                                                                                            document.body.appendChild(link);
+                                                                                                            link.click();
+                                                                                                            link.parentNode.removeChild(link);
+                                                                                                            window.URL.revokeObjectURL(url);
+                                                                                                        })
+                                                                                                        .catch(() => {
+                                                                                                            window.open(mediaUrl, '_blank');
+                                                                                                        });
+                                                                                                }}
+                                                                                                className={`p-2 rounded-lg hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer ${mine ? "hover:bg-black/10 text-black" : "hover:bg-white/10 text-white"}`}
+                                                                                                title="Download File"
+                                                                                            >
+                                                                                                <Download size={16} />
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    );
+                                                                                }
+                                                                            })()}
+                                                                            {msg.videoUrl && !msg.imageUrl && !msg.mediaUrl && (
                                                                                 <div className="relative group/video rounded-xl overflow-hidden mb-1">
                                                                                     <MediaPlayer url={msg.videoUrl} maxHeight="256px" autoPlayOnVisible={false} />
                                                                                     <button 

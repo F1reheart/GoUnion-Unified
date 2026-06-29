@@ -70,11 +70,12 @@ export const Notifications = () => {
     // The effect to auto-mark read has been removed so notifications remain unread
     // until the user specifically clicks on one.
     return (_jsxs("div", { className: "max-w-3xl mx-auto w-full pb-24 pt-8", children: [_jsx("div", { className: "mb-4", children: _jsx(StatusCircles, {}) }), _jsxs("div", { className: "mb-8 relative p-8 rounded-[2rem] glass-panel overflow-hidden border border-white/5 shadow-2xl flex items-center gap-4", children: [_jsx("div", { className: "w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10", children: _jsx(Bell, { size: 28, className: "text-white" }) }), _jsxs("div", { children: [_jsx("h1", { className: "text-2xl md:text-3xl font-black text-white tracking-tighter", children: "Notifications" }), _jsx("p", { className: "text-zinc-400 font-medium mt-1", children: "Activity across your network." })] })] }), isLoading ? (_jsx("div", { className: "space-y-4", children: [1, 2, 3].map((i) => (_jsx("div", { className: "h-24 glass-panel rounded-2xl animate-pulse" }, i))) })) : (() => {
-                const hasNotifications = notifications && notifications.length > 0;
+                const filteredNotifications = (notifications || []).filter((n) => n.type !== 'new_message');
+                const hasNotifications = filteredNotifications.length > 0;
                 if (!hasNotifications) {
                     return (_jsxs("div", { className: "glass-panel p-16 text-center rounded-[2rem] border border-dashed border-white/10", children: [_jsx(Bell, { size: 48, className: "mx-auto text-white/10 mb-4" }), _jsx("h2", { className: "text-xl font-bold text-white mb-2", children: "You're all caught up!" }), _jsx("p", { className: "text-white/40", children: "When someone interacts with you, it will show up here." })] }));
                 }
-                return (_jsx("div", { className: "space-y-4", children: notifications.map((notif, i) => {
+                return (_jsx("div", { className: "space-y-4", children: filteredNotifications.map((notif, i) => {
                         const targetPath = notif.postId ? `/post/${notif.postId}` : `/profile/${notif.actor?.username}`;
                         return (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={notif.id} className={`glass-panel p-4 rounded-2xl flex items-center gap-4 border transition-colors ${!notif.read ? 'border-primary/30 bg-primary/5' : 'border-white/5 opacity-75 hover:opacity-100'}`}>

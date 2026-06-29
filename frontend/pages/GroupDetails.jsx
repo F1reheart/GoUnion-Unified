@@ -90,6 +90,50 @@ export const GroupDetails = () => {
     const onlineMembers = (members || []).filter((m) => m.user?.is_online || m.user?.isOnline);
     const typingMembers = (members || []).filter((m) => String(m.user_id) !== String(currentUserId) && (m.user?.is_typing || m.user?.isTyping));
     const isPending = requests?.some((r) => String(r.user_id) === String(currentUserId) && r.status === "pending");
+
+    const [typingUserIds, setTypingUserIds] = useState(new Set());
+    const [isWeTyping, setIsWeTyping] = useState(false);
+    const typingTimeoutRef = useRef(null);
+
+    useEffect(() => {
+        if (!id || !window.socket) return;
+
+        const handleTypingEvent = (data) => {
+            if (String(data.groupId) === String(id) && String(data.userId) !== String(currentUserId)) {
+                setTypingUserIds((prev) => {
+                    const next = new Set(prev);
+                    if (data.isTyping) {
+                        next.add(data.userId);
+                    } else {
+                        next.delete(data.userId);
+                    }
+                    return next;
+                });
+            }
+        };
+
+        window.socket.emit('joinGroup', id);
+        window.socket.on('typing', handleTypingEvent);
+
+        return () => {
+            if (window.socket) {
+                window.socket.off('typing', handleTypingEvent);
+                window.socket.emit('typing', { groupId: id, isTyping: false });
+            }
+            setTypingUserIds(new Set());
+        };
+    }, [id, currentUserId]);
+
+    const typingMembersNames = React.useMemo(() => {
+        const names = [];
+        for (const userId of typingUserIds) {
+            const m = members?.find((member) => String(member.user_id) === String(userId));
+            if (m) {
+                names.push(m.user?.profile?.full_name || m.user?.username || "Someone");
+            }
+        }
+        return names;
+    }, [typingUserIds, members]);
     useEffect(() => {
         if (group) {
             setEditName(group.name || "");
@@ -251,6 +295,13 @@ export const GroupDetails = () => {
 
     const handleSend = () => {
         if (!messageText.trim() && !attachment) return;
+        
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        setIsWeTyping(false);
+        if (window.socket && id) {
+            window.socket.emit('typing', { groupId: id, isTyping: false });
+        }
+
         createPostMutation.mutate({ caption: messageText.trim(), image: attachment, replyToId: replyToMsg?.id });
     };
 
@@ -565,6 +616,14 @@ export const GroupDetails = () => {
                                             );
                                         })
                                     )}
+                                    {typingMembersNames.length > 0 && (
+                                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-zinc-400 text-xs w-fit max-w-[280px] mb-2 ml-4 animate-in fade-in zoom-in duration-200">
+                                            <span>{typingMembersNames.length === 1 ? `${typingMembersNames[0]} is typing` : 'Several people are typing'}</span>
+                                            <span className="w-1 h-1 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.3s]"></span>
+                                            <span className="w-1 h-1 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.15s]"></span>
+                                            <span className="w-1 h-1 rounded-full bg-zinc-400 animate-bounce"></span>
+                                        </div>
+                                    )}
                                     <div ref={bottomRef} />
                                 </div>
                             </div>
@@ -640,7 +699,21 @@ export const GroupDetails = () => {
                                                 <textarea 
                                                     ref={inputRef}
                                                     value={messageText} 
-                                                    onChange={(e) => setMessageText(e.target.value)} 
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setMessageText(val);
+                                                        if (id && window.socket) {
+                                                            if (!isWeTyping) {
+                                                                setIsWeTyping(true);
+                                                                window.socket.emit('typing', { groupId: id, isTyping: true });
+                                                            }
+                                                            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                                                            typingTimeoutRef.current = setTimeout(() => {
+                                                                setIsWeTyping(false);
+                                                                window.socket.emit('typing', { groupId: id, isTyping: false });
+                                                            }, 2000);
+                                                        }
+                                                    }} 
                                                     onKeyDown={handleKeyPress} 
                                                     onFocus={() => setIsEmojiPickerOpen(false)}
                                                     placeholder="Type a message..." 

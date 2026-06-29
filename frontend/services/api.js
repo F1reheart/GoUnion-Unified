@@ -931,6 +931,10 @@ export const api = {
                 throw error;
             }
         },
+        subscribePush: async (subscription) => {
+            const res = await apiClient.post('/notifications/subscribe', subscription);
+            return res.data;
+        },
     },
     reports: {
         create: async (data) => {

@@ -11,7 +11,10 @@ import {
   StoryLike,
   StoryView,
   User,
+  PushSubscription,
 } from './models.js';
+import webpush from 'web-push';
+import { env } from './config/env.js';
 
 export const toPlain = (doc) => {
   if (!doc) return null;
@@ -99,6 +102,18 @@ export const serializePost = async (postOrDoc, viewerId = null) => {
   };
 };
 
+if (env.vapidPublicKey && env.vapidPrivateKey) {
+  try {
+    webpush.setVapidDetails(
+      'mailto:support@gounion.app',
+      env.vapidPublicKey,
+      env.vapidPrivateKey
+    );
+  } catch (err) {
+    console.error('Failed to set VAPID details:', err.message);
+  }
+}
+
 export const addNotification = async ({ user_id, sender_id, type, post_id = null, comment_id = null, group_id = null, message = null }) => {
   if (!user_id || !sender_id || user_id === sender_id) return null;
   const doc = await Notification.create({ user_id, sender_id, type, post_id, comment_id, group_id, message });
@@ -111,6 +126,55 @@ export const addNotification = async ({ user_id, sender_id, type, post_id = null
     }
   } catch (e) {
     // ignore socket failures
+  }
+
+  // Send Web Push Notification
+  try {
+    const subscriptions = await PushSubscription.find({ user_id });
+    if (subscriptions.length > 0) {
+      let bodyText = message;
+      if (!bodyText) {
+        const actor = await User.findOne({ id: sender_id });
+        const actorName = actor ? (actor.profile?.full_name || actor.username) : 'Someone';
+        switch (type) {
+          case 'like': bodyText = `${actorName} liked your post.`; break;
+          case 'comment': bodyText = `${actorName} commented on your post.`; break;
+          case 'like_comment': bodyText = `${actorName} liked your comment.`; break;
+          case 'follow': bodyText = `${actorName} started following you.`; break;
+          case 'group_invite': bodyText = `${actorName} invited you to a group.`; break;
+          case 'group_request': bodyText = `${actorName} requested to join your group.`; break;
+          case 'new_message': bodyText = `${actorName} sent you a new message.`; break;
+          default: bodyText = `${actorName} interacted with you.`; break;
+        }
+      }
+      const payload = JSON.stringify({
+        title: 'GoUnion Network',
+        body: bodyText,
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        url: type === 'new_message' ? '/messages' : (post_id ? `/post/${post_id}` : '/notifications'),
+      });
+      for (const sub of subscriptions) {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: sub.endpoint,
+              keys: {
+                p256dh: sub.keys.p256dh,
+                auth: sub.keys.auth,
+              },
+            },
+            payload
+          );
+        } catch (pushErr) {
+          if (pushErr.statusCode === 410 || pushErr.statusCode === 404) {
+            await PushSubscription.deleteOne({ endpoint: sub.endpoint });
+          }
+        }
+      }
+    }
+  } catch (pushErr) {
+    // ignore push failures
   }
 
   return doc;

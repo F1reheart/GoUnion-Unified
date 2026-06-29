@@ -48,6 +48,7 @@ export default defineConfig(({ mode }) => {
                 workbox: {
                     clientsClaim: true,
                     skipWaiting: true,
+                    importScripts: ['/sw-custom.js'],
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
                     navigateFallback: '/index.html',
                     navigateFallbackAllowlist: [/^(?!\/__|\/api).*/],

@@ -73,6 +73,7 @@ const useWebSocket = () => {
             socketUrl = window.location.origin;
         }
         const socket = ioClient(socketUrl, { transports: ['websocket'], withCredentials: true });
+        window.socket = socket;
         socket.on('connect', () => {
             socket.emit('authenticate', { userId: user.id });
             socket.emit('user_online', { userId: user.id });
@@ -165,6 +166,9 @@ const useWebSocket = () => {
                 queryClient.invalidateQueries({ queryKey: ["discover-reels"] });
                 if (!window.location.pathname.startsWith("/notifications")) {
                     const notif = data?.notification;
+                    if (notif?.type === 'new_message' && window.location.pathname.startsWith("/messages")) {
+                        return;
+                    }
                     const actorName = notif?.actor?.fullName || notif?.actor?.username || notif?.sender?.fullName || notif?.sender?.username || "Someone";
                     let actionText = "sent you a notification.";
                     if (notif?.type === 'like') actionText = "liked your post.";
@@ -173,6 +177,7 @@ const useWebSocket = () => {
                     else if (notif?.type === 'group_invite') actionText = "invited you to a group.";
                     else if (notif?.type === 'group_request') actionText = "requested to join your group.";
                     else if (notif?.type === 'like_comment') actionText = "liked your comment.";
+                    else if (notif?.type === 'new_message') actionText = "sent you a new message.";
                     
                     toast(`${actorName} ${actionText}`, "info");
                 }
@@ -185,6 +190,9 @@ const useWebSocket = () => {
             try {
                 socket.emit('user_offline', { userId: user.id });
                 socket.disconnect();
+                if (window.socket === socket) {
+                    window.socket = null;
+                }
             }
             catch (e) { }
         };
@@ -233,24 +241,24 @@ const useNotificationPopups = () => {
                         // Check if already subscribed
                         let subscription = await registration.pushManager.getSubscription();
                         if (!subscription) {
-                            // Convert VAPID key to Uint8Array (Mock VAPID key for now, backend must provide the real one)
-                            const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLcg0zTpqhF8';
-                            const urlBase64ToUint8Array = (base64String) => {
-                                const padding = '='.repeat((4 - base64String.length % 4) % 4);
-                                const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-                                const rawData = window.atob(base64);
-                                return new Uint8Array([...rawData].map(char => char.charCodeAt(0)));
-                            };
-                            subscription = await registration.pushManager.subscribe({
-                                userVisibleOnly: true,
-                                applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
-                            });
-                        }
-                        // Send subscription to backend
-                        try {
-                            // await api.notifications.subscribePush(subscription);
-                            console.log('Push subscription ready:', subscription);
-                        }
+                             // Convert VAPID key to Uint8Array (Mock VAPID key for now, backend must provide the real one)
+                             const publicVapidKey = 'BKL5Eim5KjLP0TQX9h2ZliECO7-MGXTsDwRwOd3Ek4nDpp7RzvDbf344L4LQ-XP-UnCqRn5dro8xaNExAioXmb0';
+                             const urlBase64ToUint8Array = (base64String) => {
+                                 const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                                 const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+                                 const rawData = window.atob(base64);
+                                 return new Uint8Array([...rawData].map(char => char.charCodeAt(0)));
+                             };
+                             subscription = await registration.pushManager.subscribe({
+                                 userVisibleOnly: true,
+                                 applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
+                             });
+                         }
+                         // Send subscription to backend
+                         try {
+                             await api.notifications.subscribePush(subscription);
+                             console.log('Push subscription ready:', subscription);
+                         }
                         catch (e) {
                             console.error('Failed to send push subscription to backend', e);
                         }

@@ -32,4 +32,6 @@ export const env = {
     pass: process.env.SMTP_PASS,
     secure: process.env.SMTP_SECURE === 'true',
   },
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY || 'BKL5Eim5KjLP0TQX9h2ZliECO7-MGXTsDwRwOd3Ek4nDpp7RzvDbf344L4LQ-XP-UnCqRn5dro8xaNExAioXmb0',
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || 'ogMfjhAIRpKSTHZGQoLvocexRM6FOJXuzOZmvsVaJCE',
 };

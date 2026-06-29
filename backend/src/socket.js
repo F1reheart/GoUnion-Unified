@@ -74,6 +74,26 @@ export const initSocket = (server) => {
       if (convId) socket.join(`conversation:${convId}`);
     });
 
+    socket.on('joinGroup', (groupId) => {
+      if (groupId) socket.join(`group:${groupId}`);
+    });
+
+    socket.on('typing', (data) => {
+      if (data.conversationId) {
+        socket.to(`conversation:${data.conversationId}`).emit('typing', {
+          conversationId: data.conversationId,
+          userId: authedUserId,
+          isTyping: data.isTyping
+        });
+      } else if (data.groupId) {
+        socket.to(`group:${data.groupId}`).emit('typing', {
+          groupId: data.groupId,
+          userId: authedUserId,
+          isTyping: data.isTyping
+        });
+      }
+    });
+
     socket.on('disconnect', () => {
       void markOffline(authedUserId);
     });

@@ -262,3 +262,16 @@ export const StoryLike = models.StoryLike || model('StoryLike', storyLikeSchema)
 export const RefreshToken = models.RefreshToken || model('RefreshToken', refreshTokenSchema);
 export const PasswordResetToken = models.PasswordResetToken || model('PasswordResetToken', passwordResetTokenSchema);
 export const EmailVerificationToken = models.EmailVerificationToken || model('EmailVerificationToken', emailVerificationTokenSchema);
+
+const pushSubscriptionSchema = new Schema(
+  {
+    user_id: { type: String, required: true, index: true },
+    endpoint: { type: String, required: true, unique: true },
+    keys: {
+      p256dh: { type: String, required: true },
+      auth: { type: String, required: true },
+    },
+  },
+  baseOptions,
+);
+export const PushSubscription = models.PushSubscription || model('PushSubscription', pushSubscriptionSchema);

@@ -132,6 +132,31 @@ export const Messages = () => {
         }
     }, [userIdFromQuery, queryUsername, queryName, queryAvatar, chats, createChatMutation.isPending, createChatMutation, queryClient, setSearchParams]);
 
+    const [partnerIsTyping, setPartnerIsTyping] = useState(false);
+    const [isWeTyping, setIsWeTyping] = useState(false);
+    const typingTimeoutRef = useRef(null);
+
+    useEffect(() => {
+        if (!selectedChatId || !window.socket) return;
+        
+        const handleTypingEvent = (data) => {
+            if (String(data.conversationId) === String(selectedChatId) && String(data.userId) !== String(currentUserId)) {
+                setPartnerIsTyping(data.isTyping);
+            }
+        };
+
+        window.socket.emit('joinConversation', selectedChatId);
+        window.socket.on('typing', handleTypingEvent);
+
+        return () => {
+            if (window.socket) {
+                window.socket.off('typing', handleTypingEvent);
+                window.socket.emit('typing', { conversationId: selectedChatId, isTyping: false });
+            }
+            setPartnerIsTyping(false);
+        };
+    }, [selectedChatId, currentUserId]);
+
     const { data: messages = [], isLoading: messagesLoading, isError: messagesError, error: messagesLoadError } = useQuery({
         queryKey: ["messages", selectedChatId],
         queryFn: () => api.chats.getMessages(selectedChatId),
@@ -332,6 +357,13 @@ export const Messages = () => {
     const handleSend = () => {
         if (!selectedChatId) return;
         if (!messageText.trim() && !attachment) return;
+        
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        setIsWeTyping(false);
+        if (window.socket) {
+            window.socket.emit('typing', { conversationId: selectedChatId, isTyping: false });
+        }
+
         sendMessageMutation.mutate({ chatId: selectedChatId, content: messageText.trim() || undefined, file: attachment, replyToId: replyToMsg?.id });
     };
 
@@ -613,6 +645,14 @@ export const Messages = () => {
                                             })}
                                         </AnimatePresence>
                                     )}
+                                    {partnerIsTyping && (
+                                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-zinc-400 text-xs w-fit max-w-[200px] mb-2 ml-4 animate-in fade-in zoom-in duration-200">
+                                            <span>typing</span>
+                                            <span className="w-1 h-1 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.3s]"></span>
+                                            <span className="w-1 h-1 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.15s]"></span>
+                                            <span className="w-1 h-1 rounded-full bg-zinc-400 animate-bounce"></span>
+                                        </div>
+                                    )}
                                     <div ref={bottomRef} />
                                 </div>
                             </div>
@@ -688,7 +728,21 @@ export const Messages = () => {
                                             <textarea 
                                                 ref={inputRef}
                                                 value={messageText} 
-                                                onChange={(e) => setMessageText(e.target.value)} 
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setMessageText(val);
+                                                    if (selectedChatId && window.socket) {
+                                                        if (!isWeTyping) {
+                                                            setIsWeTyping(true);
+                                                            window.socket.emit('typing', { conversationId: selectedChatId, isTyping: true });
+                                                        }
+                                                        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                                                        typingTimeoutRef.current = setTimeout(() => {
+                                                            setIsWeTyping(false);
+                                                            window.socket.emit('typing', { conversationId: selectedChatId, isTyping: false });
+                                                        }, 2000);
+                                                    }
+                                                }} 
                                                 onKeyDown={handleKeyPress} 
                                                 onFocus={() => setIsEmojiPickerOpen(false)}
                                                 placeholder={isChatPreparing ? "Preparing chat..." : "Type a message..."} 

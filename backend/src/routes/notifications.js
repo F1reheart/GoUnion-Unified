@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Notification } from '../models.js';
+import { Notification, PushSubscription } from '../models.js';
 import { serializeNotification } from '../store.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -38,5 +38,29 @@ notificationsRouter.post(
   asyncHandler(async (req, res) => {
     await Notification.updateOne({ id: req.params.id, user_id: req.user.id }, { is_read: true });
     res.json({ status: 'read' });
+  }),
+);
+
+notificationsRouter.post(
+  '/subscribe',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const subscription = req.body;
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ error: 'Subscription endpoint is required.' });
+    }
+    await PushSubscription.updateOne(
+      { endpoint: subscription.endpoint },
+      {
+        user_id: req.user.id,
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: subscription.keys?.p256dh || '',
+          auth: subscription.keys?.auth || '',
+        },
+      },
+      { upsert: true }
+    );
+    res.status(201).json({ status: 'subscribed' });
   }),
 );

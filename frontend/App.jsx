@@ -459,6 +459,35 @@ const AppRoutes = () => {
         const timer = window.setTimeout(() => setShowPageDots(false), 360);
         return () => window.clearTimeout(timer);
     }, [location.pathname]);
+    useEffect(() => {
+        const handleGlobalPlay = (e) => {
+            const activeElement = e.target;
+            if (activeElement && (activeElement.tagName === 'VIDEO' || activeElement.tagName === 'AUDIO')) {
+                const videos = document.getElementsByTagName('video');
+                for (let i = 0; i < videos.length; i++) {
+                    if (videos[i] !== activeElement) {
+                        try {
+                            videos[i].pause();
+                        } catch (err) { /* ignore */ }
+                    }
+                }
+                const audios = document.getElementsByTagName('audio');
+                for (let i = 0; i < audios.length; i++) {
+                    if (audios[i] !== activeElement) {
+                        try {
+                            audios[i].pause();
+                        } catch (err) { /* ignore */ }
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('play', handleGlobalPlay, true);
+        return () => {
+            document.removeEventListener('play', handleGlobalPlay, true);
+        };
+    }, []);
+
     useWebSocket();
     useNotificationPopups();
     const PUBLIC_ROUTES = [

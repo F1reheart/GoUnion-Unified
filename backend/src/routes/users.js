@@ -60,6 +60,19 @@ usersRouter.put(
   '/me/profile',
   requireAuth,
   asyncHandler(async (req, res) => {
+    // If username is provided, validate uniqueness and update it
+    if (req.body.username !== undefined && req.body.username !== req.user.username) {
+      const trimmedUsername = req.body.username.trim();
+      if (!trimmedUsername) {
+        throw new HttpError(400, 'Username cannot be empty.');
+      }
+      const existing = await User.findOne({ username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') } });
+      if (existing && existing.id !== req.user.id) {
+        throw new HttpError(400, 'Username is already taken.');
+      }
+      req.user.username = trimmedUsername;
+    }
+
     const allowed = ['bio', 'university', 'profile_picture', 'cover_photo', 'course', 'hometown', 'full_name'];
     for (const key of allowed) if (req.body[key] !== undefined) req.user.profile[key] = req.body[key];
     await req.user.save();

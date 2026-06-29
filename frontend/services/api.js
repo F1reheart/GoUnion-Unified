@@ -217,6 +217,7 @@ const transformPost = (post) => {
         createdAt: createdAt ? createdAt.toISOString() : undefined,
         isLiked: post.likes?.some((l) => l.id === currentUserId) || false,
         groupId: post.group_id?.toString(),
+        isSystem: Boolean(post.is_system),
     };
 };
 const transformConversation = (conversation) => {
@@ -540,11 +541,18 @@ export const api = {
         },
         getComments: async (id) => {
             const res = await apiClient.get(`/posts/${id}/comments`);
-            return res.data;
+            return res.data.map(comment => ({
+                ...comment,
+                user: transformUser(comment.user)
+            }));
         },
         createComment: async (id, content) => {
             const res = await apiClient.post(`/posts/${id}/comments/`, { content });
-            return res.data;
+            const comment = res.data;
+            return {
+                ...comment,
+                user: transformUser(comment.user)
+            };
         },
         likeComment: async (commentId) => {
             const res = await apiClient.post(`/comments/${commentId}/like`);

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Group, GroupMember, GroupRequest, Post } from '../models.js';
+import { Group, GroupMember, GroupRequest, Post, User } from '../models.js';
 import { addNotification, publicUser, serializeGroup, serializePost } from '../store.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -52,11 +52,38 @@ groupsRouter.put(
     const group = await Group.findOne({ id: req.params.id });
     if (!group) throw notFound('Group not found.');
     if (!(await canManage(group.id, req.user))) throw forbidden('You cannot update this group.');
+    
+    const prevName = group.name;
+    const prevCover = group.cover_image;
+
     group.name = req.body.name ?? group.name;
     group.description = req.body.description ?? group.description;
     group.privacy = req.body.privacy ?? group.privacy;
     group.cover_image = req.query.cover_image || req.body.cover_image || group.cover_image;
     await group.save();
+
+    const actorName = req.user.profile?.full_name || req.user.username;
+    
+    if (group.name !== prevName) {
+      await Post.create({
+        user_id: 'system',
+        group_id: group.id,
+        caption: `${actorName} changed the group subject to "${group.name}"`,
+        is_system: true,
+        likes: []
+      });
+    }
+
+    if (group.cover_image !== prevCover) {
+      await Post.create({
+        user_id: 'system',
+        group_id: group.id,
+        caption: `${actorName} changed this group's icon`,
+        is_system: true,
+        likes: []
+      });
+    }
+
     res.json(await serializeGroup(group, req.user.id));
   }),
 );
@@ -74,6 +101,16 @@ groupsRouter.post(
       return res.json({ status: 'requested', request: request.toObject() });
     }
     await GroupMember.create({ group_id: group.id, user_id: req.user.id, role: 'member' });
+    
+    const userName = req.user.profile?.full_name || req.user.username;
+    await Post.create({
+      user_id: 'system',
+      group_id: group.id,
+      caption: `${userName} joined the group`,
+      is_system: true,
+      likes: []
+    });
+
     return res.json({ status: 'joined' });
   }),
 );
@@ -108,6 +145,18 @@ groupsRouter.post(
     await request.save();
     if (request.status === 'accepted') {
       await GroupMember.updateOne({ group_id: request.group_id, user_id: request.user_id }, { $setOnInsert: { group_id: request.group_id, user_id: request.user_id, role: 'member' } }, { upsert: true });
+      
+      const targetUser = await User.findOne({ id: request.user_id });
+      if (targetUser) {
+        const userName = targetUser.profile?.full_name || targetUser.username;
+        await Post.create({
+          user_id: 'system',
+          group_id: request.group_id,
+          caption: `${userName} joined the group`,
+          is_system: true,
+          likes: []
+        });
+      }
     }
     res.json(request.toObject());
   }),
@@ -139,8 +188,37 @@ groupsRouter.delete(
   '/:groupId/members/:userId',
   requireAuth,
   asyncHandler(async (req, res) => {
-    if (!(await canManage(req.params.groupId, req.user))) throw forbidden('You cannot remove members.');
+    // A member can always leave/exit themselves, otherwise requires admin manage permission
+    if (req.params.userId !== req.user.id && !(await canManage(req.params.groupId, req.user))) {
+      throw forbidden('You cannot remove members.');
+    }
+
+    const targetUser = await User.findOne({ id: req.params.userId });
+    const targetName = targetUser ? (targetUser.profile?.full_name || targetUser.username) : 'A member';
+
     await GroupMember.deleteOne({ group_id: req.params.groupId, user_id: req.params.userId });
+
+    if (req.params.userId === req.user.id) {
+      // Exiting
+      await Post.create({
+        user_id: 'system',
+        group_id: req.params.groupId,
+        caption: `${targetName} left the group`,
+        is_system: true,
+        likes: []
+      });
+    } else {
+      // Removed by Admin
+      const adminName = req.user.profile?.full_name || req.user.username;
+      await Post.create({
+        user_id: 'system',
+        group_id: req.params.groupId,
+        caption: `${targetName} was removed by ${adminName}`,
+        is_system: true,
+        likes: []
+      });
+    }
+
     res.json({ status: 'removed' });
   }),
 );

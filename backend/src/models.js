@@ -60,6 +60,7 @@ const postSchema = new Schema(
     image: { type: String, default: null },
     video: { type: String, default: null },
     likes: { type: [String], default: [] },
+    is_system: { type: Boolean, default: false },
   },
   baseOptions,
 );

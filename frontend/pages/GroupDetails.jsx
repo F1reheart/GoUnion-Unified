@@ -202,12 +202,23 @@ export const GroupDetails = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["group-members", id] });
             queryClient.invalidateQueries({ queryKey: ["group", id] });
+            queryClient.invalidateQueries({ queryKey: ["group-posts", id] });
+            toast("Member removed successfully!", "success");
         },
+        onError: (err) => {
+            toast(getApiErrorMessage(err, "Failed to remove member"), "error");
+        }
     });
 
     const leaveGroupMutation = useMutation({
-        mutationFn: () => api.groups.leave(id),
-        onSuccess: () => navigate("/groups"),
+        mutationFn: () => api.groups.kickMember(id, currentUserId),
+        onSuccess: () => {
+            toast("You have left the group successfully!", "success");
+            navigate("/groups");
+        },
+        onError: (err) => {
+            toast(getApiErrorMessage(err, "Failed to leave group"), "error");
+        }
     });
     
     const deleteGroupMutation = useMutation({
@@ -674,12 +685,26 @@ export const GroupDetails = () => {
                     {activeTab === "members" && (
                         <motion.div key="members" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 overflow-y-auto p-4 space-y-4">
                             {members?.map((m) => (
-                                <div key={m.id} className="bg-white/5 border border-white/10 p-4 flex items-center gap-4 rounded-2xl">
-                                    <Avatar src={m.user?.profile?.profile_picture} alt={m.user?.username} label={m.user?.username} className="w-12 h-12 rounded-xl object-cover" />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-white font-bold truncate">{m.user?.profile?.full_name || m.user?.username}</p>
-                                        <p className="text-[9px] font-black text-primary uppercase tracking-widest">{m.role}</p>
+                                <div key={m.id} className="bg-white/5 border border-white/10 p-4 flex items-center justify-between gap-4 rounded-2xl">
+                                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                                        <Avatar src={m.user?.profile?.profile_picture || m.user?.avatarUrl} alt={m.user?.username} label={m.user?.username} className="w-12 h-12 rounded-xl object-cover" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-white font-bold truncate">{m.user?.profile?.full_name || m.user?.fullName || m.user?.username}</p>
+                                            <p className="text-[9px] font-black text-primary uppercase tracking-widest">{m.role}</p>
+                                        </div>
                                     </div>
+                                    {isAdmin && String(m.user_id) !== String(currentUserId) && (
+                                        <button 
+                                            onClick={() => {
+                                                if (window.confirm(`Are you sure you want to remove ${m.user?.profile?.full_name || m.user?.username}?`)) {
+                                                    kickMemberMutation.mutate(m.user_id);
+                                                }
+                                            }}
+                                            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all shrink-0 cursor-pointer active:scale-95"
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </motion.div>
@@ -701,6 +726,19 @@ export const GroupDetails = () => {
                                     <p className="text-primary text-sm font-bold uppercase">{group.privacy}</p>
                                 </div>
                             </div>
+                            
+                            {isMember && !isAdmin && (
+                                <button 
+                                    onClick={() => {
+                                        if (window.confirm("Are you sure you want to leave this group?")) {
+                                            leaveGroupMutation.mutate();
+                                        }
+                                    }}
+                                    className="w-full py-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-2xl font-bold uppercase tracking-widest text-xs transition-all active:scale-[0.98] cursor-pointer"
+                                >
+                                    Exit Group
+                                </button>
+                            )}
                         </motion.div>
                     )}
 

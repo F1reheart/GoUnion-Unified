@@ -8,14 +8,17 @@ import { api, getApiErrorMessage } from "../services/api";
 import { Skeleton } from "../components/ui/Skeleton";
 import { Avatar } from "../components/ui/Avatar";
 import { authStorage } from "../utils/persistentStorage";
+import { useToast } from "../components/ui/Toast";
 import { VoiceRecorder } from "../components/chat/VoiceRecorder";
 import { StickerPicker } from "../components/chat/StickerPicker";
 import { AudioPlayer } from "../components/chat/AudioPlayer";
+import { MediaPlayer } from "../components/ui/MediaPlayer";
 import { CameraModal } from "../components/chat/CameraModal";
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 
 export const GroupDetails = () => {
     const { id } = useParams();
+    const { toast } = useToast();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [messageText, setMessageText] = useState("");
@@ -31,6 +34,10 @@ export const GroupDetails = () => {
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [activeMessageMenu, setActiveMessageMenu] = useState(null);
     const [replyToMsg, setReplyToMsg] = useState(null);
+    const [editName, setEditName] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editPrivacy, setEditPrivacy] = useState("public");
+
 
     const bottomRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -69,6 +76,13 @@ export const GroupDetails = () => {
     const onlineMembers = (members || []).filter((m) => m.user?.is_online || m.user?.isOnline);
     const typingMembers = (members || []).filter((m) => String(m.user_id) !== String(currentUserId) && (m.user?.is_typing || m.user?.isTyping));
     const isPending = requests?.some((r) => String(r.user_id) === String(currentUserId) && r.status === "pending");
+    useEffect(() => {
+        if (group) {
+            setEditName(group.name || "");
+            setEditDescription(group.description || "");
+            setEditPrivacy(group.privacy || "public");
+        }
+    }, [group]);
 
     const sortedMessages = React.useMemo(() => {
         if (!posts) return [];
@@ -152,10 +166,14 @@ export const GroupDetails = () => {
     });
 
     const updateGroupMutation = useMutation({
-        mutationFn: (file) => api.groups.updateGroup(id, file),
+        mutationFn: (data) => api.groups.updateGroup(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["group", id] });
+            toast("Group settings saved successfully!", "success");
         },
+        onError: (err) => {
+            toast(getApiErrorMessage(err, "Failed to update group"), "error");
+        }
     });
 
     const updateRoleMutation = useMutation({
@@ -262,8 +280,17 @@ export const GroupDetails = () => {
     return (
         <div className="h-[100dvh] w-full bg-[#030303] text-white flex flex-col overflow-hidden">
             {/* Header Area */}
-            <div className="relative shrink-0">
+            <div className="relative shrink-0 border-b border-white/5">
                 <img src={group.imageUrl} alt={group.name} className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                {isAdmin && (
+                    <label className="absolute right-4 top-4 z-[40] p-2 bg-black/60 hover:bg-black/80 border border-white/10 text-white rounded-xl cursor-pointer hover:scale-105 active:scale-95 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider shadow-lg">
+                        <Camera size={14} /> Update Cover
+                        <input type="file" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) updateGroupMutation.mutate({ file });
+                        }} className="hidden" accept="image/*" />
+                    </label>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-[#030303]/80 to-transparent" />
                 <div className="relative w-full p-4 md:p-6 flex flex-col gap-4">
                     <button onClick={() => navigate("/groups")} className="flex items-center gap-3 text-white/60 hover:text-white transition-all w-fit">
@@ -315,7 +342,7 @@ export const GroupDetails = () => {
                 <AnimatePresence mode="wait">
                     {activeTab === "chat" && (
                         <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col">
-                            <div className="flex-1 overflow-y-auto px-3 md:px-6 py-4" onClick={() => setActiveMessageMenu(null)}>
+                            <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-6 py-4" onClick={() => setActiveMessageMenu(null)}>
                                 <div className="space-y-3 pb-4">
                                     {isPostsLoading ? (
                                         <div className="flex justify-center py-10"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" /></div>
@@ -390,7 +417,13 @@ export const GroupDetails = () => {
 
                                                                 {!mine && <span className="text-[10px] font-bold text-primary/70 px-2">{msg.author?.fullName || msg.author?.username || "Member"}</span>}
 
-                                                                <div className={`rounded-2xl px-3 py-2 shadow-md border ${mine ? "bg-primary text-black border-primary/20 rounded-br-md" : "bg-[#111114] text-white border-white/10 rounded-bl-md"}`}>
+                                                                <div 
+                                                                     onContextMenu={(e) => {
+                                                                         e.preventDefault();
+                                                                         setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id);
+                                                                     }}
+                                                                     className={`rounded-2xl px-3 py-2 shadow-md border cursor-pointer select-none transition-all duration-200 ${mine ? "bg-primary text-black border-primary/20 rounded-br-md active:scale-[0.99] hover:brightness-[0.98]" : "bg-[#111114] text-white border-white/10 rounded-bl-md active:scale-[0.99] hover:bg-[#151519]"}`}
+                                                                 >
                                                                     {repliedMsg && (
                                                                         <div className={`mb-2 p-2 rounded-xl border-l-2 text-xs ${mine ? "bg-black/10 border-black text-black/70" : "bg-black/30 border-primary text-white/70"}`}>
                                                                             <span className={`font-bold block mb-1 ${mine ? "text-black" : "text-primary"}`}>{String(repliedMsg.author?.id) === String(currentUserId) ? "You" : repliedMsg.author?.fullName}</span>
@@ -404,7 +437,14 @@ export const GroupDetails = () => {
                                                                         <>
                                                                             {(msg.imageUrl || msg.mediaUrl) && <img src={msg.imageUrl || msg.mediaUrl} className="max-h-64 rounded-xl mb-1 object-cover cursor-pointer" alt="" onClick={() => {}} />}
                                                                             {msg.videoUrl && <MediaPlayer url={msg.videoUrl} maxHeight="256px" autoPlayOnVisible={false} />}
-                                                                            {msg.audioUrl && <AudioPlayer src={msg.audioUrl} mine={mine} />}
+                                                                            {msg.audioUrl && (
+                                                                                <AudioPlayer 
+                                                                                    src={msg.audioUrl} 
+                                                                                    mine={mine} 
+                                                                                    senderAvatar={msg.author?.avatarUrl} 
+                                                                                    senderName={msg.author?.fullName || msg.author?.username} 
+                                                                                />
+                                                                            )}
                                                                             {msg.stickerUrl && <img src={msg.stickerUrl} className="h-24 w-24 object-contain" alt="Sticker" />}
                                                                             {(msg.content || msg.caption) && <p className={`px-1 pt-1 text-[14px] leading-relaxed whitespace-pre-wrap ${mine ? "text-black" : "text-white"}`}>{msg.content || msg.caption}</p>}
                                                                         </>
@@ -572,15 +612,87 @@ export const GroupDetails = () => {
                     )}
 
                     {activeTab === "admin" && isAdmin && (
-                        <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 overflow-y-auto p-4 space-y-8">
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                                <h3 className="text-white font-serif text-xl mb-4">Pending Requests</h3>
+                        <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 overflow-y-auto p-4 space-y-6">
+                            {/* Group Info Settings (WhatsApp style) */}
+                            <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 shadow-xl">
+                                <h3 className="text-white font-serif text-xl mb-1">Group Settings</h3>
+                                <p className="text-xs text-white/40 uppercase tracking-widest font-black mb-6">Manage group details and privacy</p>
+                                
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Group Name</label>
+                                        <input 
+                                            type="text" 
+                                            value={editName} 
+                                            onChange={(e) => setEditName(e.target.value)} 
+                                            className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-primary/30 transition-all font-semibold"
+                                            placeholder="Group Name" 
+                                        />
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Description</label>
+                                        <textarea 
+                                            value={editDescription} 
+                                            onChange={(e) => setEditDescription(e.target.value)} 
+                                            rows={3}
+                                            className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-primary/30 transition-all resize-none font-medium leading-relaxed"
+                                            placeholder="Describe the group purpose..." 
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Group Privacy</label>
+                                        <select 
+                                            value={editPrivacy} 
+                                            onChange={(e) => setEditPrivacy(e.target.value)} 
+                                            className="w-full bg-[#111114] border border-white/5 rounded-xl px-4 py-3 text-white font-semibold focus:outline-none focus:border-primary/30 transition-all"
+                                        >
+                                            <option value="public">Public (anyone can find and join)</option>
+                                            <option value="private">Private (requires approval to join)</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-2 pt-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Group Profile Picture</label>
+                                        <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/5">
+                                            <Avatar src={group.imageUrl} alt={group.name} className="w-12 h-12 rounded-xl object-cover border border-white/10" />
+                                            <label className="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-xs font-black uppercase tracking-wider cursor-pointer hover:scale-105 active:scale-95 transition-all">
+                                                <Camera size={14} /> Change Avatar
+                                                <input 
+                                                    type="file" 
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) updateGroupMutation.mutate({ file });
+                                                    }} 
+                                                    className="hidden" 
+                                                    accept="image/*" 
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <button 
+                                        onClick={() => updateGroupMutation.mutate({ name: editName, description: editDescription, privacy: editPrivacy })} 
+                                        disabled={updateGroupMutation.isPending}
+                                        className="w-full py-4 mt-2 bg-primary text-black rounded-xl font-bold uppercase tracking-widest text-xs hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                                    >
+                                        {updateGroupMutation.isPending ? "Saving..." : "Save Settings"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Pending Requests */}
+                            <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 shadow-xl">
+                                <h3 className="text-white font-serif text-xl mb-1">Pending Requests</h3>
+                                <p className="text-xs text-white/40 uppercase tracking-widest font-black mb-6">Review membership requests</p>
+                                
                                 {requests?.length === 0 ? (
-                                    <p className="text-white/40 text-sm">No pending requests</p>
+                                    <p className="text-white/40 text-sm py-4">No pending requests</p>
                                 ) : (
                                     <div className="space-y-4">
                                         {requests?.map((req) => (
-                                            <div key={req.id} className="flex items-center justify-between border-b border-white/10 pb-4">
+                                            <div key={req.id} className="flex items-center justify-between border-b border-white/10 pb-4 last:border-0 last:pb-0">
                                                 <div className="flex items-center gap-3">
                                                     <Avatar src={req.user?.profile?.profile_picture} className="w-10 h-10 rounded-xl" />
                                                     <div>
@@ -589,8 +701,8 @@ export const GroupDetails = () => {
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    <button onClick={() => approveMutation.mutate({ requestId: req.id, status: "accepted" })} className="p-2 bg-emerald-500/20 text-emerald-500 rounded-lg"><Check size={16}/></button>
-                                                    <button onClick={() => approveMutation.mutate({ requestId: req.id, status: "rejected" })} className="p-2 bg-red-500/20 text-red-500 rounded-lg"><X size={16}/></button>
+                                                    <button onClick={() => approveMutation.mutate({ requestId: req.id, status: "accepted" })} className="p-2 bg-emerald-500/20 text-emerald-500 rounded-lg hover:scale-105 active:scale-95 transition-transform"><Check size={16}/></button>
+                                                    <button onClick={() => approveMutation.mutate({ requestId: req.id, status: "rejected" })} className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:scale-105 active:scale-95 transition-transform"><X size={16}/></button>
                                                 </div>
                                             </div>
                                         ))}

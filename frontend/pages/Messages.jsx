@@ -436,7 +436,7 @@ export const Messages = () => {
                                 </button>
                             </header>
 
-                            <div className="relative flex-1 overflow-y-auto px-3 md:px-10 py-6" onClick={() => setActiveMessageMenu(null)}>
+                            <div className="relative flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-10 py-6" onClick={() => setActiveMessageMenu(null)}>
                                 <div className="absolute inset-0 opacity-60 pointer-events-none bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.05),transparent_25%),radial-gradient(circle_at_85%_30%,rgba(196,255,14,0.04),transparent_22%)]" />
                                 
                                 <div className="relative space-y-5 pb-4">
@@ -506,7 +506,13 @@ export const Messages = () => {
                                                                     )}
                                                                 </div>
 
-                                                                <div className={`rounded-2xl px-3 py-2 shadow-md border ${mine ? "bg-primary text-black border-primary/20 rounded-br-md" : (!msg.isRead ? "bg-[#151512] text-white border-primary/20 rounded-bl-md shadow-[0_0_15px_rgba(196,255,14,0.04)]" : "bg-[#111114] text-white border-white/10 rounded-bl-md")}`}>
+                                                                <div 
+                                                                    onContextMenu={(e) => {
+                                                                        e.preventDefault();
+                                                                        setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id);
+                                                                    }}
+                                                                    className={`rounded-2xl px-3 py-2 shadow-md border cursor-pointer select-none transition-all duration-200 ${mine ? "bg-primary text-black border-primary/20 rounded-br-md active:scale-[0.99] hover:brightness-[0.98]" : (!msg.isRead ? "bg-[#151512] text-white border-primary/20 rounded-bl-md shadow-[0_0_15px_rgba(196,255,14,0.04)] active:scale-[0.99]" : "bg-[#111114] text-white border-white/10 rounded-bl-md active:scale-[0.99] hover:bg-[#151519]")}`}
+                                                                >
                                                                     {repliedMsg && (
                                                                         <div className={`mb-2 p-2 rounded-xl border-l-2 text-xs ${mine ? "bg-black/10 border-black text-black/70" : "bg-black/30 border-primary text-white/70"}`}>
                                                                             <span className={`font-bold block mb-1 ${mine ? "text-black" : "text-primary"}`}>{String(repliedMsg.senderId) === String(currentUserId) ? "You" : (activeChat?.partner?.fullName || "User")}</span>
@@ -526,7 +532,14 @@ export const Messages = () => {
                                                                                     <span className="text-sm truncate max-w-[200px]">{msg.fileName || "Attachment"}</span>
                                                                                 </a>
                                                                             )}
-                                                                            {msg.audioUrl && <AudioPlayer src={msg.audioUrl} mine={mine} />}
+                                                                            {msg.audioUrl && (
+                                                                                <AudioPlayer 
+                                                                                    src={msg.audioUrl} 
+                                                                                    mine={mine} 
+                                                                                    senderAvatar={mine ? currentUser?.avatarUrl : activeChat?.partner?.avatarUrl} 
+                                                                                    senderName={mine ? currentUser?.fullName : activeChat?.partner?.fullName} 
+                                                                                />
+                                                                            )}
                                                                             {msg.stickerUrl && <img src={msg.stickerUrl} className="h-24 w-24 object-contain" alt="Sticker" />}
                                                                             {(msg.content || msg.caption) && <p className={`px-1 pt-1 text-[14px] leading-relaxed whitespace-pre-wrap ${mine ? "text-black" : "text-white"}`}>{msg.content || msg.caption}</p>}
                                                                         </>
@@ -681,14 +694,7 @@ export const Messages = () => {
                                         <X size={20} />
                                     </button>
                                 </div>
-                                <div className="border-b border-white/5 p-4 flex gap-2">
-                                    <button onClick={importContacts} className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-black uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                                        <UserPlus size={16} /> Sync Contacts
-                                    </button>
-                                    <button onClick={shareAppLink} className="flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/20 transition-colors">
-                                        <Share size={16} /> Send App Link
-                                    </button>
-                                </div>
+
                                 <div className="flex-1 overflow-y-auto p-3">
                                     {suggestionsLoading ? (
                                         <div className="py-12 text-center text-sm text-white/40">Loading contacts...</div>

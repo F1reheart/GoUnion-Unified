@@ -66,7 +66,9 @@ export const Profile = () => {
                 updateUser(updatedUser);
             }
             setIsEditModalOpen(false);
-            queryClient.invalidateQueries({ queryKey: ["profile", username] });
+            queryClient.invalidateQueries({ queryKey: ["profile"] });
+            queryClient.invalidateQueries({ queryKey: ["posts"] });
+            queryClient.invalidateQueries({ queryKey: ["chats"] });
             queryClient.invalidateQueries({ queryKey: ["profile-posts", username] });
             queryClient.invalidateQueries({ queryKey: ["feed"] });
             queryClient.invalidateQueries({ queryKey: ["discover-reels"] });

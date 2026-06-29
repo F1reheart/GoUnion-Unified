@@ -137,6 +137,7 @@ const messageSchema = new Schema(
     sticker_url: { type: String, default: null },
     sticker_id: { type: String, default: null },
     is_read: { type: Boolean, default: false },
+    is_deleted: { type: Boolean, default: false },
   },
   baseOptions,
 );

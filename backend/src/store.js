@@ -88,14 +88,14 @@ export const serializeComment = async (commentOrDoc, viewerId = null) => {
 export const serializePost = async (postOrDoc, viewerId = null) => {
   const post = toPlain(postOrDoc);
   if (!post) return null;
-  const comments = await Comment.find({ post_id: post.id }).sort({ created_at: 1 });
+  const commentsCount = await Comment.countDocuments({ post_id: post.id });
   return {
     ...post,
     user: await publicUser(post.user_id, viewerId),
-    comments: await Promise.all(comments.map((comment) => serializeComment(comment, viewerId))),
-    likes: await Promise.all((post.likes || []).map((userId) => publicUser(userId, viewerId))),
+    comments: [],
+    likes: (post.likes || []).map((userId) => ({ id: userId })),
     likes_count: post.likes?.length || 0,
-    comments_count: comments.length,
+    comments_count: commentsCount,
   };
 };
 
@@ -106,17 +106,7 @@ export const addNotification = async ({ user_id, sender_id, type, post_id = null
   try {
     const io = getIo();
     if (io) {
-      const payload = {
-        id: doc.id,
-        user_id: doc.user_id,
-        sender_id: doc.sender_id,
-        type: doc.type,
-        post_id: doc.post_id,
-        comment_id: doc.comment_id,
-        group_id: doc.group_id,
-        message: doc.message,
-        created_at: doc.created_at,
-      };
+      const payload = await serializeNotification(doc);
       io.to(`user:${user_id}`).emit('notification', { type: 'new_notification', notification: payload });
     }
   } catch (e) {

@@ -2,9 +2,8 @@
 import axios from 'axios';
 import { useAuthStore } from '../store';
 import { authStorage } from '../utils/persistentStorage';
-const DEFAULT_PROD_API_URL = 'https://gounion-backend.onrender.com';
 export const API_URL = import.meta.env.VITE_API_URL ||
-    (import.meta.env.DEV ? 'http://127.0.0.1:8001' : DEFAULT_PROD_API_URL);
+    (import.meta.env.DEV ? 'http://127.0.0.1:8001' : '/api');
 // Create Axios instance
 // 120 s default — enough for a Render free-tier cold start (~30-90 s)
 export const apiClient = axios.create({
@@ -213,7 +212,7 @@ const transformPost = (post) => {
         mediaType,
         isReel,
         likes: post.likes_count || 0,
-        comments: post.comments?.length || 0,
+        comments: post.comments_count ?? post.comments?.length ?? 0,
         timestamp: createdAt ? createdAt.toLocaleDateString() : '',
         createdAt: createdAt ? createdAt.toISOString() : undefined,
         isLiked: post.likes?.some((l) => l.id === currentUserId) || false,
@@ -245,19 +244,21 @@ const transformConversation = (conversation) => {
 const transformMessage = (m) => {
     const createdAt = getValidDate(m.created_at || m.createdAt || m.timestamp) || new Date();
     const rawAudioUrl = m.audio_url || (m.image_url && m.image_url.match(/\.(mp3|wav|ogg|webm|m4a)$/i) ? m.image_url : null);
+    const hasAudio = !!rawAudioUrl;
     const rawStickerUrl = m.sticker_url || m.stickerUrl || null;
     const rawFileUrl = m.image_url && !isImageMedia(m.image_url) && !isVideoMedia(m.image_url) && !rawAudioUrl ? m.image_url : null;
     return {
         id: m.id.toString(),
         content: m.content,
-        imageUrl: isImageMedia(m.image_url) ? getFullUrl(m.image_url) : null,
-        videoUrl: getFullUrl(m.video_url) || (isVideoMedia(m.image_url) ? getFullUrl(m.image_url) : null),
+        imageUrl: m.image_url && !hasAudio && isImageMedia(m.image_url) ? getFullUrl(m.image_url) : null,
+        videoUrl: getFullUrl(m.video_url) || (m.image_url && !hasAudio && isVideoMedia(m.image_url) ? getFullUrl(m.image_url) : null),
         audioUrl: getFullUrl(rawAudioUrl),
         stickerUrl: getFullUrl(rawStickerUrl),
         stickerId: m.sticker_id || m.stickerId || null,
         fileUrl: getFullUrl(rawFileUrl),
         fileName: rawFileUrl ? rawFileUrl.split('/').pop() : null,
         isRead: m.is_read ?? m.isRead ?? m.status === 'read' ?? Boolean(m.read_at || m.readAt || m.seen || m.seen_by?.length),
+        isDeleted: m.is_deleted ?? m.isDeleted ?? false,
         senderId: m.sender_id,
         createdAt: createdAt.toISOString(),
         timestamp: createdAt.toLocaleTimeString([], {
@@ -717,12 +718,17 @@ export const api = {
             const res = await apiClient.post('/posts/', await buildPostPayload({ ...data, group_id: id }));
             return transformPost(res.data);
         },
-        updateGroup: async (id, file) => {
+        updateGroup: async (id, { name, description, privacy, file } = {}) => {
             let cover_url = undefined;
             if (file) {
                 cover_url = await uploadFile(file);
             }
-            const res = await apiClient.put(`/groups/${id}${cover_url ? `?cover_image=${encodeURIComponent(cover_url)}` : ''}`);
+            const payload = {};
+            if (name !== undefined) payload.name = name;
+            if (description !== undefined) payload.description = description;
+            if (privacy !== undefined) payload.privacy = privacy;
+            if (cover_url !== undefined) payload.cover_image = cover_url;
+            const res = await apiClient.put(`/groups/${id}`, payload);
             return res.data;
         },
         updateMemberRole: async (groupId, userId, role) => {

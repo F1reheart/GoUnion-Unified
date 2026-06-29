@@ -39,7 +39,9 @@ export const Settings = () => {
             setAvatarPreview(updatedUser.avatarUrl || "");
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
-            queryClient.invalidateQueries({ queryKey: ["profile", user?.username] });
+            queryClient.invalidateQueries({ queryKey: ["profile"] });
+            queryClient.invalidateQueries({ queryKey: ["posts"] });
+            queryClient.invalidateQueries({ queryKey: ["chats"] });
         }
     });
     const handleSaveProfile = (e) => {

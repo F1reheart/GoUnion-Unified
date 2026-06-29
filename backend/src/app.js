@@ -20,6 +20,7 @@ import { reportsRouter } from './routes/reports.js';
 import { searchRouter } from './routes/search.js';
 import { storiesRouter } from './routes/stories.js';
 import { usersRouter } from './routes/users.js';
+import { messagesRouter } from './routes/messages.js';
 
 export const app = express();
 
@@ -73,6 +74,7 @@ apiRouter.use('/admin', adminRouter);
 apiRouter.use('/stories', storiesRouter);
 apiRouter.use('/media', mediaRouter);
 apiRouter.use('/mobile', mobileRouter);
+apiRouter.use('/messages', messagesRouter);
 
 app.use('/api', apiRouter);
 

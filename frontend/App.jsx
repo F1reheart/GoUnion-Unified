@@ -68,8 +68,11 @@ const useWebSocket = () => {
     useEffect(() => {
         if (!isAuthenticated || !user?.id)
             return;
-        const currentApiUrl = API_URL || 'http://127.0.0.1:8001';
-        const socket = ioClient(currentApiUrl, { transports: ['websocket'], withCredentials: true });
+        let socketUrl = API_URL || 'http://127.0.0.1:8001';
+        if (!socketUrl.startsWith('http')) {
+            socketUrl = window.location.origin;
+        }
+        const socket = ioClient(socketUrl, { transports: ['websocket'], withCredentials: true });
         socket.on('connect', () => {
             socket.emit('authenticate', { userId: user.id });
             socket.emit('user_online', { userId: user.id });
@@ -101,6 +104,16 @@ const useWebSocket = () => {
             }
         });
         socket.on('message_read', (data) => {
+            try {
+                const conversationId = String(data?.conversationId || data?.conversation_id);
+                if (conversationId) {
+                    queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
+                    queryClient.invalidateQueries({ queryKey: ["chats"] });
+                }
+            }
+            catch (e) { }
+        });
+        socket.on('message_deleted', (data) => {
             try {
                 const conversationId = String(data?.conversationId || data?.conversation_id);
                 if (conversationId) {
@@ -151,7 +164,17 @@ const useWebSocket = () => {
                 queryClient.invalidateQueries({ queryKey: ["feed"] });
                 queryClient.invalidateQueries({ queryKey: ["discover-reels"] });
                 if (!window.location.pathname.startsWith("/notifications")) {
-                    toast(data.message || "New notification", "info");
+                    const notif = data?.notification;
+                    const actorName = notif?.actor?.fullName || notif?.actor?.username || notif?.sender?.fullName || notif?.sender?.username || "Someone";
+                    let actionText = "sent you a notification.";
+                    if (notif?.type === 'like') actionText = "liked your post.";
+                    else if (notif?.type === 'comment') actionText = "commented on your post.";
+                    else if (notif?.type === 'follow') actionText = "started following you.";
+                    else if (notif?.type === 'group_invite') actionText = "invited you to a group.";
+                    else if (notif?.type === 'group_request') actionText = "requested to join your group.";
+                    else if (notif?.type === 'like_comment') actionText = "liked your comment.";
+                    
+                    toast(`${actorName} ${actionText}`, "info");
                 }
             }
             catch (e) {

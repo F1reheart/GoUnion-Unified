@@ -1,17 +1,19 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import React, { useState } from "react";
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, MessageSquare, User, Compass, GraduationCap, ShieldCheck, Settings, LogOut, X, Bell } from "lucide-react";
+import { Home, Users, MessageSquare, User, Compass, GraduationCap, ShieldCheck, Settings, LogOut, X, Bell, UserPlus } from "lucide-react";
 import { useAuthStore } from "../../store";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../services/api";
 import { motion, AnimatePresence } from "framer-motion";
+import { InviteModal } from "../ui/InviteModal";
 
 export const MobileNav = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, logout } = useAuthStore();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isInviteOpen, setIsInviteOpen] = useState(false);
 
     const { data: unreadData } = useQuery({
         queryKey: ['notifications-unread'],
@@ -41,6 +43,7 @@ export const MobileNav = () => {
     const OTHER_ITEMS = [
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
         { icon: Users, label: "Groups", path: "/groups" },
+        { icon: UserPlus, label: "Invite", path: "#invite" },
         { icon: GraduationCap, label: "Alumni", path: "/alumni" },
         ...((user?.role === "admin" || user?.role === "moderator" || user?.email === "ezeilodavid292@gmail.com" || localStorage.getItem('login_email') === "ezeilodavid292@gmail.com")
             ? [{ icon: ShieldCheck, label: "Admin Panel", path: "/admin" }]
@@ -121,6 +124,12 @@ export const MobileNav = () => {
                                                         e.preventDefault();
                                                         return;
                                                     }
+                                                    if (item.label === "Invite") {
+                                                        e.preventDefault();
+                                                        setIsMenuOpen(false);
+                                                        setIsInviteOpen(true);
+                                                        return;
+                                                    }
                                                     setIsMenuOpen(false);
                                                 }}
                                                 className={`flex items-center justify-center w-[52px] h-[52px] bg-[#111114]/90 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.8)] transition-transform hover:scale-110 relative ${item.label === "Alumni" ? "opacity-80 cursor-not-allowed border-dashed border-white/30" : "hover:bg-white/10"}`}
@@ -153,6 +162,7 @@ export const MobileNav = () => {
                     </div>
                 )}
             </AnimatePresence>
+            <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} username={user?.username} />
         </>
     );
 };

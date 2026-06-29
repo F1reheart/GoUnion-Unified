@@ -1,12 +1,14 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import React from "react";
+import React, { useState } from "react";
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Compass, Users, MessageSquare, GraduationCap, User, Settings, LogOut, Search, ShieldCheck, Bell, } from "lucide-react";
+import { Home, Compass, Users, MessageSquare, GraduationCap, User, Settings, LogOut, Search, ShieldCheck, Bell, UserPlus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../services/api";
 import { useAuthStore } from "../../store";
 import { motion } from "framer-motion";
 import { Avatar } from "../ui/Avatar";
+import { InviteModal } from "../ui/InviteModal";
+
 const NAV_ITEMS = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Compass, label: "Discover", path: "/discover" },
@@ -19,6 +21,7 @@ export const Sidebar = () => {
     const { user, logout } = useAuthStore();
     const location = useLocation();
     const navigate = useNavigate();
+    const [isInviteOpen, setIsInviteOpen] = useState(false);
     const { data: unreadData } = useQuery({
         queryKey: ['notifications-unread'],
         queryFn: api.notifications.getUnreadCount,
@@ -57,7 +60,13 @@ export const Sidebar = () => {
             ${isActive
                             ? "bg-gradient-to-r from-white/10 to-white/5 text-white border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                             : "text-white/60 hover:bg-white/5 hover:text-white border border-transparent"}
-          `, children: [_jsx(User, { className: "w-5 h-5" }), "Profile"] }), (user?.role === "admin" || user?.role === "moderator" || user?.email === "ezeilodavid292@gmail.com" || localStorage.getItem('login_email') === "ezeilodavid292@gmail.com") && (_jsxs(NavLink, { to: "/admin", className: ({ isActive }) => `
+          `, children: [_jsx(User, { className: "w-5 h-5" }), "Profile"] }), 
+                    _jsxs("button", { 
+                        onClick: () => setIsInviteOpen(true), 
+                        className: "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white border border-transparent transition-all duration-200 group mt-1",
+                        children: [_jsx(UserPlus, { className: "w-5 h-5 group-hover:scale-110 transition-transform" }), "Invite Friends"]
+                    }),
+                    (user?.role === "admin" || user?.role === "moderator" || user?.email === "ezeilodavid292@gmail.com" || localStorage.getItem('login_email') === "ezeilodavid292@gmail.com") && (_jsxs(NavLink, { to: "/admin", className: ({ isActive }) => `
               flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group mt-1
               ${isActive
                             ? "bg-emerald-400/20 text-emerald-400 border border-emerald-400/20"
@@ -65,5 +74,5 @@ export const Sidebar = () => {
             `, children: [_jsx(ShieldCheck, { className: "w-5 h-5" }), "Admin Panel"] }))] }), _jsx("div", { className: "p-4 mt-auto", children: _jsxs("div", { className: "glass-panel rounded-2xl p-4 flex flex-col gap-3", children: [_jsxs("div", { className: "flex items-center gap-3", children: [_jsx(Avatar, { src: user?.avatarUrl, label: user?.fullName, alt: "Profile", className: "w-10 h-10 rounded-full border border-white/10 object-cover" }), _jsxs("div", { className: "flex-1 min-w-0", children: [_jsx("p", { className: "text-sm font-medium text-white truncate", children: user?.fullName || "Student" }), _jsx("p", { className: "text-xs text-white/50 truncate", children: user?.university || "University Student" })] })] }), _jsx("div", { className: "h-px w-full bg-white/10" }), _jsxs("div", { className: "flex items-center justify-between", children: [_jsx(Link, { to: "/settings", className: "text-white/50 hover:text-white transition-colors p-1", children: _jsx(Settings, { className: "w-4 h-4" }) }), _jsx("button", { onClick: () => {
                                         logout();
                                         navigate("/login");
-                                    }, className: "text-white/50 hover:text-red-400 transition-colors p-1", children: _jsx(LogOut, { className: "w-4 h-4" }) })] })] }) })] }));
+                                    }, className: "text-white/50 hover:text-red-400 transition-colors p-1", children: _jsx(LogOut, { className: "w-4 h-4" }) })] })] }) }), _jsx(InviteModal, { isOpen: isInviteOpen, onClose: () => setIsInviteOpen(false), username: user?.username })] }));
 };

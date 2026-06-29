@@ -14,12 +14,14 @@ import { AudioPlayer } from "../components/chat/AudioPlayer";
 import { CameraModal } from "../components/chat/CameraModal";
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { MediaPlayer } from "../components/ui/MediaPlayer";
+import { useAuthStore } from "../store";
 
 export const Messages = () => {
     const queryClient = useQueryClient();
     const { toast } = useToast();
     const navigate = useNavigate();
     const currentUserId = authStorage.getItem("user_id");
+    const { user: currentUser } = useAuthStore();
     const [searchParams, setSearchParams] = useSearchParams();
     const userIdFromQuery = searchParams.get("userId");
     const queryUsername = searchParams.get("username") || "";

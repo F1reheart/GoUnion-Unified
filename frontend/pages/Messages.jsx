@@ -595,31 +595,12 @@ export const Messages = () => {
                                                                                         <FileText size={20} className="shrink-0" />
                                                                                         <span className="text-sm truncate">{msg.fileName || "Attachment"}</span>
                                                                                     </button>
-                                                                                    <button 
-                                                                                        onClick={(e) => {
-                                                                                            e.preventDefault();
-                                                                                            // Force download via direct fetch to bypass Service Worker interception
-                                                                                            fetch(msg.fileUrl)
-                                                                                                .then(r => r.blob())
-                                                                                                .then(blob => {
-                                                                                                    const url = window.URL.createObjectURL(blob);
-                                                                                                    const link = document.createElement('a');
-                                                                                                    link.href = url;
-                                                                                                    link.setAttribute('download', msg.fileName || 'download');
-                                                                                                    document.body.appendChild(link);
-                                                                                                    link.click();
-                                                                                                    link.parentNode.removeChild(link);
-                                                                                                    window.URL.revokeObjectURL(url);
-                                                                                                })
-                                                                                                .catch(() => {
-                                                                                                    window.open(msg.fileUrl, '_blank');
-                                                                                                });
-                                                                                        }}
+                                                                                    <a href={msg.fileUrl} download={msg.fileName || 'download'} target="_blank" rel="noopener noreferrer"
                                                                                         className={`p-2 rounded-lg hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer ${mine ? "hover:bg-black/10 text-black" : "hover:bg-white/10 text-white"}`}
                                                                                         title="Download File"
                                                                                     >
-                                                                                        <Download size={16} />
-                                                                                    </button>
+                                                                                        <Download size={18} />
+                                                                                    </a>
                                                                                 </div>
                                                                             )}
                                                                             {msg.audioUrl && (

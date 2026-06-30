@@ -38,8 +38,7 @@ export const GroupDetails = () => {
     const [activeTab, setActiveTab] = useState("chat");
     const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
     const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-    const [joinDepartment, setJoinDepartment] = useState("");
-    const [joinLevel, setJoinLevel] = useState("");
+    const [joinMessage, setJoinMessage] = useState("");
     const [isVoiceRecording, setIsVoiceRecording] = useState(false);
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
@@ -228,10 +227,23 @@ export const GroupDetails = () => {
 
     const joinMutation = useMutation({
         mutationFn: (data) => api.groups.join(id, data),
-        onSuccess: () => {
+        onSuccess: (res) => {
             queryClient.invalidateQueries({ queryKey: ["group", id] });
             queryClient.invalidateQueries({ queryKey: ["group-members", id] });
             queryClient.invalidateQueries({ queryKey: ["group-requests", id] });
+            if (res.status === "requested") {
+                toast("Request sent successfully!", "success");
+            } else {
+                toast("Joined group!", "success");
+            }
+        },
+    });
+
+    const makeAdminMutation = useMutation({
+        mutationFn: (userId) => api.groups.updateMemberRole(id, userId, 'admin'),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["group-members", id] });
+            toast("Member promoted to admin", "success");
         },
     });
 
@@ -787,16 +799,26 @@ export const GroupDetails = () => {
                                         </div>
                                     </div>
                                     {isAdmin && String(m.user_id) !== String(currentUserId) && (
-                                        <button 
-                                            onClick={() => {
-                                                if (window.confirm(`Are you sure you want to remove ${m.user?.profile?.full_name || m.user?.username}?`)) {
-                                                    kickMemberMutation.mutate(m.user_id);
-                                                }
-                                            }}
-                                            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all shrink-0 cursor-pointer active:scale-95"
-                                        >
-                                            Remove
-                                        </button>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            {m.role !== "admin" && (
+                                                <button 
+                                                    onClick={() => makeAdminMutation.mutate(m.user_id)}
+                                                    className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all cursor-pointer active:scale-95"
+                                                >
+                                                    Make Admin
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={() => {
+                                                    if (window.confirm(`Are you sure you want to remove ${m.user?.profile?.full_name || m.user?.username}?`)) {
+                                                        kickMemberMutation.mutate(m.user_id);
+                                                    }
+                                                }}
+                                                className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all cursor-pointer active:scale-95"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             ))}
@@ -921,7 +943,9 @@ export const GroupDetails = () => {
                                                     <Avatar src={req.user?.profile?.profile_picture} className="w-10 h-10 rounded-xl" />
                                                     <div>
                                                         <p className="text-white text-sm font-bold">{req.user?.username}</p>
-                                                        <p className="text-[10px] text-white/50">{req.department} • {req.level}</p>
+                                                        {req.message && (
+                                                            <p className="text-[10px] text-white/70 italic mt-1">&quot;{req.message}&quot;</p>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-2">
@@ -945,9 +969,8 @@ export const GroupDetails = () => {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsJoinModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
                         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="relative w-full max-w-md bg-[#111114] border border-white/10 rounded-[2rem] p-6 shadow-2xl">
                             <h2 className="text-xl font-serif text-white mb-4">Join Private Group</h2>
-                            <input type="text" value={joinDepartment} onChange={(e) => setJoinDepartment(e.target.value)} placeholder="Department" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-3" />
-                            <input type="text" value={joinLevel} onChange={(e) => setJoinLevel(e.target.value)} placeholder="Level" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-6" />
-                            <button onClick={() => { joinMutation.mutate({ department: joinDepartment, level: joinLevel }); setIsJoinModalOpen(false); }} className="w-full py-3 bg-white text-black rounded-xl font-bold uppercase tracking-widest text-xs">Submit Request</button>
+                            <textarea value={joinMessage} onChange={(e) => setJoinMessage(e.target.value)} placeholder="Why do you want to join this group? (Optional)" rows={3} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-6 resize-none focus:outline-none focus:border-primary/30" />
+                            <button onClick={() => { joinMutation.mutate({ message: joinMessage }); setIsJoinModalOpen(false); }} className="w-full py-3 bg-white text-black rounded-xl font-bold uppercase tracking-widest text-xs">Submit Request</button>
                         </motion.div>
                     </div>
                 )}

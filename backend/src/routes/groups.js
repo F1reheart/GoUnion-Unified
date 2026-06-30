@@ -96,8 +96,8 @@ groupsRouter.post(
     if (!group) throw notFound('Group not found.');
     if (await member(group.id, req.user.id)) return res.json({ status: 'joined' });
     if (group.privacy === 'private') {
-      const request = await GroupRequest.create({ group_id: group.id, user_id: req.user.id, status: 'pending' });
-      await addNotification({ user_id: group.creator_id, sender_id: req.user.id, type: 'group_request', group_id: group.id });
+      const request = await GroupRequest.create({ group_id: group.id, user_id: req.user.id, status: 'pending', message: req.body.message || '' });
+      await addNotification({ user_id: group.creator_id, sender_id: req.user.id, type: 'group_request', group_id: group.id, message: req.body.message || null });
       return res.json({ status: 'requested', request: request.toObject() });
     }
     await GroupMember.create({ group_id: group.id, user_id: req.user.id, role: 'member' });

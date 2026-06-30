@@ -112,6 +112,7 @@ const groupRequestSchema = new Schema(
     group_id: { type: String, required: true, index: true },
     user_id: { type: String, required: true, index: true },
     status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+    message: { type: String, default: '' },
   },
   baseOptions,
 );

@@ -76,7 +76,9 @@ export const GroupDetails = () => {
     });
 
     const isMember = Boolean(group?.isJoined) || members?.some((m) => String(m.user_id) === String(currentUserId));
-    const isAdmin = String(group?.creatorId) === String(currentUserId);
+    const isOriginalAdmin = String(group?.creatorId) === String(currentUserId);
+    const isGroupAdmin = isOriginalAdmin || members?.some((m) => String(m.user_id) === String(currentUserId) && m.role === 'admin');
+    const isAdmin = isOriginalAdmin;
     const canViewMessages = Boolean(group) && (group.privacy !== "private" || isMember || isAdmin);
 
     const { data: posts, isLoading: isPostsLoading } = useQuery({
@@ -801,14 +803,26 @@ export const GroupDetails = () => {
                                             <p className="text-[9px] font-black text-primary uppercase tracking-widest">{m.role}</p>
                                         </div>
                                     </div>
-                                    {isAdmin && String(m.user_id) !== String(currentUserId) && (
+                                    {(() => {
+                                        const isTargetOriginalAdmin = String(m.user_id) === String(group?.creatorId);
+                                        const isTargetAdmin = m.role === 'admin';
+                                        return isGroupAdmin && String(m.user_id) !== String(currentUserId) && !isTargetOriginalAdmin && (isOriginalAdmin || !isTargetAdmin);
+                                    })() && (
                                         <div className="flex items-center gap-2 shrink-0">
-                                            {m.role !== "admin" && (
+                                            {isOriginalAdmin && m.role !== "admin" && (
                                                 <button 
                                                     onClick={() => makeAdminMutation.mutate(m.user_id)}
                                                     className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all cursor-pointer active:scale-95"
                                                 >
                                                     Make Admin
+                                                </button>
+                                            )}
+                                            {isOriginalAdmin && m.role === "admin" && (
+                                                <button 
+                                                    onClick={() => updateRoleMutation.mutate({ userId: m.user_id, role: 'member' })}
+                                                    className="px-4 py-2 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all cursor-pointer active:scale-95"
+                                                >
+                                                    Remove Admin
                                                 </button>
                                             )}
                                             <button 

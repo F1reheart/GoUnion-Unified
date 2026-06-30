@@ -203,6 +203,18 @@ export const GroupDetails = () => {
             return () => clearTimeout(timer);
         }
     }, [sortedMessages, activeTab, highlightMsgId]);
+    const firstUnreadIndex = useMemo(() => {
+        if (!sortedMessages) return -1;
+        return sortedMessages.findIndex(m => !m.isRead && String(m.senderId) !== String(user?.id));
+    }, [sortedMessages, user?.id]);
+
+    useEffect(() => {
+        if (activeTab === "chat" && firstUnreadIndex !== -1 && sortedMessages[firstUnreadIndex]) {
+            setHighlightMsgId(String(sortedMessages[firstUnreadIndex].id));
+            const timer = setTimeout(() => setHighlightMsgId(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [activeTab, firstUnreadIndex]);
 
     const deletePostMutation = useMutation({
         mutationFn: (postId) => api.posts.delete(postId),
@@ -564,7 +576,7 @@ export const GroupDetails = () => {
                                                             <div className={`flex flex-col gap-1 ${mine ? "items-end" : "items-start"}`}>
                                                                 
                                                                 {/* Context Menu Icon */}
-                                                                <div className={`absolute top-2 ${mine ? "-left-10" : "-right-10"} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                                                                <div className={`absolute top-2 ${mine ? "-left-10" : "-right-10"} opacity-40 group-hover:opacity-100 transition-opacity`}>
                                                                     <button onClick={(e) => { e.stopPropagation(); setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id); }} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white shadow">
                                                                         <MoreVertical size={14} />
                                                                     </button>

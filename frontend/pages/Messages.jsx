@@ -204,14 +204,14 @@ export const Messages = () => {
         return messages.findIndex(m => !m.isRead && String(m.senderId) !== String(currentUserId));
     }, [messages, currentUserId]);
 
-    // Highlight the first unread message when a chat is opened
+    // Highlight the first unread message when a chat is opened or a new message arrives
     useEffect(() => {
         if (firstUnreadIndex !== -1 && messages[firstUnreadIndex]) {
             setHighlightedMsgId(messages[firstUnreadIndex].id);
             const timer = setTimeout(() => setHighlightedMsgId(null), 3000);
             return () => clearTimeout(timer);
         }
-    }, [selectedChatId]); // Run only when opening a chat
+    }, [selectedChatId, firstUnreadIndex]);
 
     const selectedChat = chats.find((chat) => chat.id === selectedChatId);
     const activeChat = selectedChat || (pendingChat?.id === selectedChatId ? pendingChat : null);
@@ -576,7 +576,7 @@ export const Messages = () => {
                                                             <div className={`flex max-w-[82%] flex-col gap-1 sm:max-w-[70%] ${mine ? "items-end" : "items-start"}`}>
                                                                 
                                                                 {/* Context Menu Icon */}
-                                                                <div className={`absolute top-2 ${mine ? "-left-10" : "-right-10"} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                                                                <div className={`absolute top-2 ${mine ? "-left-10" : "-right-10"} opacity-40 group-hover:opacity-100 transition-opacity`}>
                                                                     <button onClick={(e) => { e.stopPropagation(); setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id); }} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white shadow">
                                                                         <MoreVertical size={14} />
                                                                     </button>

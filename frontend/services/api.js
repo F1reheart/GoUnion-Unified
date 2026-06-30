@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store';
 import { authStorage } from '../utils/persistentStorage';
 export const API_URL = import.meta.env.VITE_API_URL ||
-    (import.meta.env.DEV ? 'http://127.0.0.1:8001' : '/api');
+    (import.meta.env.DEV ? `http://${window.location.hostname}:8001` : '/api');
 // Create Axios instance
 // 120 s default — enough for a Render free-tier cold start (~30-90 s)
 export const apiClient = axios.create({

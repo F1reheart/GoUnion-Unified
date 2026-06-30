@@ -94,7 +94,7 @@ usersRouter.get(
   '/:id/posts',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const posts = await Post.find({ user_id: req.params.id }).sort({ created_at: -1 }).limit(Number(req.query.limit || 50));
+    const posts = await Post.find({ user_id: req.params.id, is_taken_down: { $ne: true } }).sort({ created_at: -1 }).limit(Number(req.query.limit || 50));
     res.json(await Promise.all(posts.map((post) => serializePost(post, req.user.id))));
   }),
 );

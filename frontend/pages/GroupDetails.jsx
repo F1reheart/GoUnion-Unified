@@ -456,9 +456,19 @@ export const GroupDetails = () => {
                     {activeTab === "chat" && (
                         <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col">
                             <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-6 py-4" onClick={() => setActiveMessageMenu(null)}>
-                                <div className="space-y-3 pb-4">
-                                    {isPostsLoading ? (
-                                        <div className="flex justify-center py-10"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" /></div>
+                                {!canViewMessages ? (
+                                    <div className="flex flex-col items-center justify-center py-20 text-center text-white/40 h-full">
+                                        <Lock size={48} className="mb-4 text-white/20" />
+                                        <h3 className="text-xl font-black text-white mb-2">Private Group</h3>
+                                        <p className="text-xs font-bold uppercase tracking-widest max-w-[200px] mb-6">Join the group to view chat history and participate in the discussion.</p>
+                                        <button onClick={() => { group.privacy === "private" ? setIsJoinModalOpen(true) : joinMutation.mutate(undefined); }} className="px-6 py-3 bg-white text-black rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-zinc-200 transition-all">
+                                            {group.privacy === "private" ? "Request to Join" : "Join Group"}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3 pb-4">
+                                        {isPostsLoading ? (
+                                            <div className="flex justify-center py-10"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" /></div>
                                     ) : sortedMessages.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-20 text-center text-white/40">
                                             <Sparkles size={32} className="mb-4 text-white/20" />
@@ -684,7 +694,13 @@ export const GroupDetails = () => {
                             </AnimatePresence>
 
                             {/* Chat Input Footer */}
-                            {isMember ? (
+                            {group?.adminsOnlyChat && !isGroupAdmin ? (
+                                <footer className="bg-[#0a0a0c]/95 border-t border-white/5 p-4 text-center shrink-0 z-30 relative">
+                                    <p className="text-xs text-white/60 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                                        <Lock size={14} className="text-accent" /> Only admins can send messages in this group
+                                    </p>
+                                </footer>
+                            ) : isMember ? (
                                 <footer className="bg-[#0a0a0c]/95 border-t border-white/5 px-2 py-2 shrink-0 z-30 relative flex flex-col gap-2">
                                     {attachmentPreview && (
                                         <div className="mx-2 mb-2 w-fit relative">
@@ -782,15 +798,7 @@ export const GroupDetails = () => {
                                         </div>
                                     )}
                                 </footer>
-                            ) : !isPending ? (
-                                <div className="bg-[#0a0a0c]/95 border-t border-white/5 px-4 py-4 text-center shrink-0">
-                                    <button onClick={() => { group.privacy === "private" ? setIsJoinModalOpen(true) : joinMutation.mutate(undefined); }} className="px-8 py-3 bg-white text-black rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-zinc-200 transition-all w-full md:w-auto">
-                                        {group.privacy === "private" ? "Request to Join" : "Join Group to Chat"}
-                                    </button>
-                                </div>
-                            ) : null}
-                        </motion.div>
-                    )}
+                            )}
 
                     {activeTab === "members" && (
                         <motion.div key="members" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 overflow-y-auto p-4 space-y-4">
@@ -904,16 +912,28 @@ export const GroupDetails = () => {
                                         />
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Group Privacy</label>
-                                        <select 
-                                            value={editPrivacy} 
-                                            onChange={(e) => setEditPrivacy(e.target.value)} 
-                                            className="w-full bg-[#111114] border border-white/5 rounded-xl px-4 py-3 text-white font-semibold focus:outline-none focus:border-primary/30 transition-all"
-                                        >
-                                            <option value="public">Public (anyone can find and join)</option>
-                                            <option value="private">Private (requires approval to join)</option>
-                                        </select>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                                            <div>
+                                                <h4 className="text-sm font-bold text-white mb-1">Admin Only Chat</h4>
+                                                <p className="text-xs text-white/60">Only admins will be able to send messages</p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" className="sr-only peer" checked={group.adminsOnlyChat} onChange={(e) => updateGroupMutation.mutate({ admins_only_chat: e.target.checked })} />
+                                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                            </label>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Group Privacy</label>
+                                            <select 
+                                                value={editPrivacy} 
+                                                onChange={(e) => setEditPrivacy(e.target.value)} 
+                                                className="w-full bg-[#111114] border border-white/5 rounded-xl px-4 py-3 text-white font-semibold focus:outline-none focus:border-primary/30 transition-all"
+                                            >
+                                                <option value="public">Public (anyone can find and join)</option>
+                                                <option value="private">Private (requires approval to join)</option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-2 pt-2">

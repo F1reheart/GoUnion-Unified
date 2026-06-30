@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
-import { Bell, Heart, MessageSquare, UserPlus, Users } from 'lucide-react';
+import { Bell, Heart, MessageSquare, UserPlus, Users, AtSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { StatusCircles } from '../components/feed/StatusCircles';
@@ -12,6 +12,7 @@ const getIconForType = (type) => {
         case 'like': return _jsx(Heart, { size: 16, className: "text-red-400" });
         case 'like_comment': return _jsx(Heart, { size: 16, className: "text-pink-400" });
         case 'comment': return _jsx(MessageSquare, { size: 16, className: "text-blue-400" });
+        case 'mention': return _jsx(AtSign, { size: 16, className: "text-yellow-400" });
         case 'follow': return _jsx(UserPlus, { size: 16, className: "text-emerald-400" });
         case 'group_invite':
         case 'group_request': return _jsx(Users, { size: 16, className: "text-purple-400" });
@@ -23,6 +24,7 @@ const getMessageForType = (type) => {
         case 'like': return "liked your post.";
         case 'like_comment': return "liked your comment.";
         case 'comment': return "commented on your post.";
+        case 'mention': return "tagged you in a post or comment.";
         case 'follow': return "started following you.";
         case 'group_invite': return "invited you to a group.";
         case 'group_request': return "requested to join your group.";

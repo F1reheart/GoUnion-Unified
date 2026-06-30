@@ -50,6 +50,9 @@ export const Messages = () => {
     const [activeMessageMenu, setActiveMessageMenu] = useState(null);
     const [replyToMsg, setReplyToMsg] = useState(null);
     const [selectedMedia, setSelectedMedia] = useState(null);
+    const [highlightedMsgId, setHighlightedMsgId] = useState(null);
+    const [msgToForward, setMsgToForward] = useState(null);
+    const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
 
     const { data: chats = [], isLoading: chatsLoading, isError: chatsError, error: chatsLoadError } = useQuery({
         queryKey: ["chats"],
@@ -186,6 +189,15 @@ export const Messages = () => {
     const firstUnreadIndex = useMemo(() => {
         return messages.findIndex(m => !m.isRead && String(m.senderId) !== String(currentUserId));
     }, [messages, currentUserId]);
+
+    // Highlight the first unread message when a chat is opened
+    useEffect(() => {
+        if (firstUnreadIndex !== -1 && messages[firstUnreadIndex]) {
+            setHighlightedMsgId(messages[firstUnreadIndex].id);
+            const timer = setTimeout(() => setHighlightedMsgId(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [selectedChatId]); // Run only when opening a chat
 
     const selectedChat = chats.find((chat) => chat.id === selectedChatId);
     const activeChat = selectedChat || (pendingChat?.id === selectedChatId ? pendingChat : null);
@@ -532,10 +544,18 @@ export const Messages = () => {
                                                                         <MoreVertical size={14} />
                                                                     </button>
                                                                     {activeMessageMenu === msg.id && (
-                                                                        <div className="absolute top-8 z-50 bg-[#111114] border border-white/10 rounded-xl shadow-2xl p-1 w-32 flex flex-col">
-                                                                            <button onClick={() => { setReplyToMsg(msg); setActiveMessageMenu(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-white hover:bg-white/10 rounded-lg w-full text-left">
-                                                                                <Reply size={14} /> Reply
-                                                                            </button>
+                                                                            <div className="absolute top-8 z-50 bg-[#111114] border border-white/10 rounded-xl shadow-2xl p-1 w-40 flex flex-col">
+                                                                                <button onClick={() => { setReplyToMsg(msg); setActiveMessageMenu(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-white hover:bg-white/10 rounded-lg w-full text-left">
+                                                                                    <Reply size={14} /> Reply
+                                                                                </button>
+                                                                                <button onClick={() => { setMsgToForward(msg); setIsForwardModalOpen(true); setActiveMessageMenu(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-white hover:bg-white/10 rounded-lg w-full text-left">
+                                                                                    <Share size={14} /> Forward
+                                                                                </button>
+                                                                                {navigator.share && (
+                                                                                    <button onClick={() => handleShare(msg, mine)} className="flex items-center gap-2 px-3 py-2 text-xs text-white hover:bg-white/10 rounded-lg w-full text-left">
+                                                                                        <ExternalLink size={14} /> Share externally
+                                                                                    </button>
+                                                                                )}
                                                                             {mine && (
                                                                                 <button onClick={() => { deleteMessageMutation.mutate(msg.id); setActiveMessageMenu(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-500/10 rounded-lg w-full text-left">
                                                                                     <Trash2 size={14} /> Delete
@@ -550,7 +570,7 @@ export const Messages = () => {
                                                                         e.preventDefault();
                                                                         setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id);
                                                                     }}
-                                                                    className={`rounded-2xl px-3 py-2 shadow-md border cursor-pointer select-none transition-all duration-200 ${mine ? "bg-primary text-black border-primary/20 rounded-br-md active:scale-[0.99] hover:brightness-[0.98]" : (!msg.isRead ? "bg-[#151512] text-white border-primary/20 rounded-bl-md shadow-[0_0_15px_rgba(196,255,14,0.04)] active:scale-[0.99]" : "bg-[#111114] text-white border-white/10 rounded-bl-md active:scale-[0.99] hover:bg-[#151519]")}`}
+                                                                    className={`rounded-2xl px-3 py-2 shadow-md border cursor-pointer select-none transition-all duration-500 ${highlightedMsgId === msg.id ? 'ring-2 ring-primary ring-offset-2 ring-offset-[#0a0a0c] scale-[1.02]' : ''} ${mine ? "bg-primary text-black border-primary/20 rounded-br-md active:scale-[0.99] hover:brightness-[0.98]" : (!msg.isRead ? "bg-[#151512] text-white border-primary/20 rounded-bl-md shadow-[0_0_15px_rgba(196,255,14,0.04)] active:scale-[0.99]" : "bg-[#111114] text-white border-white/10 rounded-bl-md active:scale-[0.99] hover:bg-[#151519]")}`}
                                                                 >
                                                                     {repliedMsg && (
                                                                         <div className={`mb-2 p-2 rounded-xl border-l-2 text-xs ${mine ? "bg-black/10 border-black text-black/70" : "bg-black/30 border-primary text-white/70"}`}>
@@ -822,11 +842,53 @@ export const Messages = () => {
                 <MediaModal 
                     isOpen={!!selectedMedia} 
                     onClose={() => setSelectedMedia(null)} 
-                    mediaUrl={selectedMedia.url} 
-                    mediaType={selectedMedia.type} 
-                    fileName={selectedMedia.name} 
+                    mediaUrl={selectedMedia?.url} 
+                    mediaType={selectedMedia?.type} 
+                    fileName={selectedMedia?.name} 
                 />
             )}
+
+            {/* Forward Modal */}
+            <AnimatePresence>
+                {isForwardModalOpen && msgToForward && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 px-4">
+                        <motion.div initial={{ y: 20, scale: 0.95 }} animate={{ y: 0, scale: 1 }} exit={{ y: 20, scale: 0.95 }} className="bg-[#111114] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden flex flex-col max-h-[80vh] shadow-2xl">
+                            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+                                <h3 className="font-bold text-white uppercase tracking-widest text-sm">Forward Message</h3>
+                                <button onClick={() => { setIsForwardModalOpen(false); setMsgToForward(null); }} className="p-1 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-colors">
+                                    <X size={18} />
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-2 space-y-1 hide-scrollbar">
+                                {chats.map(chat => (
+                                    <button 
+                                        key={chat.id} 
+                                        onClick={() => {
+                                            const senderName = String(msgToForward.senderId) === String(currentUserId) ? currentUser?.fullName : activeChat?.partner?.fullName;
+                                            const mediaStr = [msgToForward.imageUrl, msgToForward.videoUrl, msgToForward.fileUrl].filter(Boolean).join('\n');
+                                            const fwdContent = `Forwarded from ${senderName}:\n\n${msgToForward.content || ''}${mediaStr ? '\n' + mediaStr : ''}`;
+                                            sendMessageMutation.mutate({ chatId: chat.id, content: fwdContent });
+                                            setIsForwardModalOpen(false);
+                                            setMsgToForward(null);
+                                            toast("Message forwarded", "success");
+                                        }}
+                                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-colors text-left group"
+                                    >
+                                        <Avatar src={chat.partner.avatarUrl} alt={chat.partner.fullName} label={chat.partner.fullName} className="h-10 w-10 rounded-full" />
+                                        <span className="font-bold text-sm text-white flex-1 truncate">{chat.partner.fullName}</span>
+                                        <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-black text-white/40 transition-colors">
+                                            <Send size={14} className="ml-0.5" />
+                                        </div>
+                                    </button>
+                                ))}
+                                {chats.length === 0 && (
+                                    <p className="text-center text-white/40 text-xs font-bold uppercase py-10">No chats available</p>
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

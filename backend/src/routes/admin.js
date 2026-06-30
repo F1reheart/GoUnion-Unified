@@ -14,7 +14,7 @@ adminRouter.get(
   asyncHandler(async (_req, res) => {
     const [total_users, total_posts, total_groups, pending_reports] = await Promise.all([
       User.countDocuments(),
-      Post.countDocuments(),
+      Post.countDocuments({ group_id: null }),
       Group.countDocuments(),
       Report.countDocuments({ status: 'pending' }),
     ]);
@@ -35,6 +35,12 @@ adminRouter.put(
   asyncHandler(async (req, res) => {
     const user = await User.findOne({ id: req.params.id });
     if (!user) throw notFound('User not found.');
+    
+    // Protect original admin
+    if (user.email === 'ezeilodavid292@gmail.com' && req.user.email !== 'ezeilodavid292@gmail.com') {
+      throw forbidden('You cannot modify the original admin.');
+    }
+    
     user.role = req.query.role || req.body.role || user.role;
     await user.save();
     res.json(await publicUser(user, req.user.id));
@@ -46,6 +52,12 @@ adminRouter.post(
   asyncHandler(async (req, res) => {
     const user = await User.findOne({ id: req.params.id });
     if (!user) throw notFound('User not found.');
+    
+    // Protect original admin
+    if (user.email === 'ezeilodavid292@gmail.com' && req.user.email !== 'ezeilodavid292@gmail.com') {
+      throw forbidden('You cannot suspend the original admin.');
+    }
+    
     user.is_active = !user.is_active;
     await user.save();
     res.json(await publicUser(user, req.user.id));

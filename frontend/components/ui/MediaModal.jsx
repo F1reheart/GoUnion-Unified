@@ -19,6 +19,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
     if (!isOpen) return null;
 
     const isPdf = fileName?.toLowerCase().endsWith('.pdf') || mediaUrl?.toLowerCase().includes('.pdf');
+    const isOfficeDoc = fileName?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || mediaUrl?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
 
     // Force download handler to bypass Service Worker interception
     const handleDownload = async (e) => {
@@ -58,22 +59,16 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                             <button 
                                 onClick={onClose}
                                 className="flex items-center gap-1 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
-                                title="Back to chat"
                             >
                                 <ChevronLeft size={20} />
-                                <span className="text-sm font-bold pr-1">Back</span>
+                                <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline">Back</span>
                             </button>
-
-                            <div className="flex items-center gap-3 min-w-0 ml-2 hidden sm:flex">
-                                <div className="p-1.5 rounded-lg bg-white/5 text-primary">
-                                    <FileText size={16} />
-                                </div>
-                                <span className="text-sm font-bold text-white truncate max-w-[150px] md:max-w-md">{fileName || 'Media View'}</span>
-                            </div>
+                            {/* File Name */}
+                            <h2 className="text-white font-bold text-sm truncate max-w-[200px] sm:max-w-md">{fileName || 'Media'}</h2>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            {/* Open in new tab (bypassing service worker) */}
+                        <div className="flex items-center gap-2 shrink-0">
+                            {/* External Link */}
                             <a 
                                 href={mediaUrl} 
                                 target="_blank" 
@@ -117,6 +112,12 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                             isPdf ? (
                                 <iframe 
                                     src={mediaUrl} 
+                                    className="w-full h-full bg-white" 
+                                    title={fileName}
+                                />
+                            ) : isOfficeDoc ? (
+                                <iframe 
+                                    src={`https://docs.google.com/gview?url=${encodeURIComponent(mediaUrl)}&embedded=true`}
                                     className="w-full h-full bg-white" 
                                     title={fileName}
                                 />

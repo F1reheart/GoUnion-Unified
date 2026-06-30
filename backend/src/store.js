@@ -193,6 +193,9 @@ export const serializeGroup = async (groupOrDoc, viewerId = null) => {
   const group = toPlain(groupOrDoc);
   return {
     ...group,
+    creatorId: String(group.creator_id),
+    privacy: group.privacy,
+    adminsOnlyChat: group.admins_only_chat || false,
     member_count: await GroupMember.countDocuments({ group_id: group.id }),
     is_joined: viewerId ? Boolean(await GroupMember.exists({ group_id: group.id, user_id: viewerId })) : false,
   };

@@ -91,6 +91,7 @@ const groupSchema = new Schema(
     privacy: { type: String, enum: ['public', 'private', 'secret'], default: 'public' },
     creator_id: { type: String, required: true, index: true },
     is_active: { type: Boolean, default: true },
+    admins_only_chat: { type: Boolean, default: false },
   },
   baseOptions,
 );

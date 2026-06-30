@@ -59,6 +59,9 @@ groupsRouter.put(
     group.name = req.body.name ?? group.name;
     group.description = req.body.description ?? group.description;
     group.privacy = req.body.privacy ?? group.privacy;
+    if (req.body.admins_only_chat !== undefined) {
+      group.admins_only_chat = req.body.admins_only_chat;
+    }
     group.cover_image = req.query.cover_image || req.body.cover_image || group.cover_image;
     await group.save();
 
@@ -166,7 +169,7 @@ groupsRouter.get(
   '/:id/posts/',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const posts = await Post.find({ group_id: req.params.id }).sort({ created_at: -1 });
+    const posts = await Post.find({ group_id: req.params.id, is_taken_down: { $ne: true } }).sort({ created_at: -1 });
     res.json(await Promise.all(posts.map((post) => serializePost(post, req.user.id))));
   }),
 );

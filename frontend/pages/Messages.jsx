@@ -692,10 +692,18 @@ export const Messages = () => {
                                                                         </>
                                                                     )}
                                                                 </div>
-                                                                <div className={`flex items-center gap-1 px-2 text-[10px] ${mine ? "text-primary/70" : "text-white/40"}`}>
+                                                                <div className={`flex items-center gap-2 px-2 mt-1 text-[10px] ${mine ? "text-primary/70" : "text-white/40"}`}>
                                                                     <span>{msg.fullTimestamp || msg.timestamp}</span>
+                                                                    <button onClick={() => { setMsgToForward(msg); setIsForwardModalOpen(true); }} className="hover:text-white transition-colors flex items-center gap-1" title="Forward">
+                                                                        <Share size={12} /> <span className="hidden sm:inline">Forward</span>
+                                                                    </button>
+                                                                    {navigator.share && (
+                                                                        <button onClick={() => handleShare(msg, mine)} className="hover:text-white transition-colors flex items-center gap-1" title="Share Externally">
+                                                                            <ExternalLink size={12} /> <span className="hidden sm:inline">Share</span>
+                                                                        </button>
+                                                                    )}
                                                                     {mine && !msg.isDeleted && (
-                                                                        msg.isRead ? <CheckCheck size={14} className="text-[#3b82f6]" /> : activeChat?.partner?.isOnline ? <CheckCheck size={14} className="text-white/40" /> : <Check size={14} className="text-white/40" />
+                                                                        msg.isRead ? <CheckCheck size={14} className="text-[#3b82f6] ml-1" /> : activeChat?.partner?.isOnline ? <CheckCheck size={14} className="text-white/40 ml-1" /> : <Check size={14} className="text-white/40 ml-1" />
                                                                     )}
                                                                 </div>
                                                             </div>

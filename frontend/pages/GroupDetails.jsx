@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard, Maximize2, Download, Share, Search, Share2 } from "lucide-react";
+import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard, Maximize2, Download, Share, Search, Share2, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api, getApiErrorMessage, transformPost } from "../services/api";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -715,9 +715,17 @@ export const GroupDetails = () => {
                                                                         </>
                                                                     )}
                                                                 </div>
-                                                                <div className={`flex items-center gap-1 px-2 text-[10px] ${mine ? "text-primary/70" : "text-white/40"}`}>
+                                                                <div className={`flex items-center gap-2 px-2 mt-1 text-[10px] ${mine ? "text-primary/70" : "text-white/40"}`}>
                                                                     <span>{msgDate ? getTimeLabel(msgDate) : ""}</span>
-                                                                    {mine && !msg.isDeleted && <CheckCheck size={12} className="text-blue-500" />}
+                                                                    <button onClick={() => { setMsgToForward(msg); setIsForwardModalOpen(true); }} className="hover:text-white transition-colors flex items-center gap-1" title="Forward">
+                                                                        <Share size={12} /> <span className="hidden sm:inline">Forward</span>
+                                                                    </button>
+                                                                    {navigator.share && (
+                                                                        <button onClick={() => handleShare(msg, mine)} className="hover:text-white transition-colors flex items-center gap-1" title="Share Externally">
+                                                                            <ExternalLink size={12} /> <span className="hidden sm:inline">Share</span>
+                                                                        </button>
+                                                                    )}
+                                                                    {mine && !msg.isDeleted && <CheckCheck size={12} className="text-blue-500 ml-1" />}
                                                                 </div>
                                                             </div>
                                                         </div>

@@ -172,7 +172,10 @@ export const GroupDetails = () => {
 
     useEffect(() => {
         if (activeTab === "chat") {
-            bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+            const timer = setTimeout(() => {
+                bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+            }, 100);
+            return () => clearTimeout(timer);
         }
     }, [sortedMessages, activeTab]);
 

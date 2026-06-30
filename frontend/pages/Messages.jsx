@@ -165,7 +165,10 @@ export const Messages = () => {
     });
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        const timer = setTimeout(() => {
+            bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        }, 100);
+        return () => clearTimeout(timer);
     }, [messages, selectedChatId]);
 
     useEffect(() => {

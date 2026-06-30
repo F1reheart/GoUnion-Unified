@@ -205,8 +205,8 @@ export const GroupDetails = () => {
     }, [sortedMessages, activeTab, highlightMsgId]);
     const firstUnreadIndex = useMemo(() => {
         if (!sortedMessages) return -1;
-        return sortedMessages.findIndex(m => !m.isRead && String(m.senderId) !== String(user?.id));
-    }, [sortedMessages, user?.id]);
+        return sortedMessages.findIndex(m => !m.isRead && String(m.senderId || m.author?.id) !== String(currentUserId));
+    }, [sortedMessages, currentUserId]);
 
     useEffect(() => {
         if (activeTab === "chat" && firstUnreadIndex !== -1 && sortedMessages[firstUnreadIndex]) {

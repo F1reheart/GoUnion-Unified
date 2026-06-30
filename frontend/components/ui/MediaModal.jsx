@@ -1,21 +1,58 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import React, { useEffect, useState } from 'react';
-import { ChevronLeft, Download, FileText, ExternalLink, Loader2 } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { ChevronLeft, Download, FileText, ExternalLink, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Detect mobile browsers - they can't render PDFs in iframes natively
-const isMobile = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-    || (window.innerWidth < 768);
 
 export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) => {
     const [loading, setLoading] = useState(true);
-    const [iframeKey, setIframeKey] = useState(0);
+    const [blobUrl, setBlobUrl] = useState(null);
+    const [loadError, setLoadError] = useState(false);
 
-    // Reset states when URL changes
+    const isPdf = fileName?.toLowerCase().endsWith('.pdf') || mediaUrl?.toLowerCase().includes('.pdf');
+    const isOfficeDoc = fileName?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || mediaUrl?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
+    const isDocument = isPdf || isOfficeDoc;
+
+    // For PDFs: fetch as blob and create a local blob URL so it works on both mobile and desktop
     useEffect(() => {
+        if (!isOpen || !mediaUrl || mediaType !== 'file') return;
+        if (!isPdf) {
+            setLoading(false);
+            return;
+        }
+
+        let cancelled = false;
         setLoading(true);
-        setIframeKey(prev => prev + 1);
-    }, [mediaUrl]);
+        setLoadError(false);
+        setBlobUrl(null);
+
+        fetch(mediaUrl)
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to fetch');
+                return res.blob();
+            })
+            .then(blob => {
+                if (cancelled) return;
+                const url = URL.createObjectURL(blob);
+                setBlobUrl(url);
+                setLoading(false);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setLoadError(true);
+                setLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isOpen, mediaUrl, mediaType, isPdf]);
+
+    // Clean up blob URL on unmount or URL change
+    useEffect(() => {
+        return () => {
+            if (blobUrl) URL.revokeObjectURL(blobUrl);
+        };
+    }, [blobUrl]);
 
     // Prevent background scrolling when open
     useEffect(() => {
@@ -29,37 +66,25 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
         };
     }, [isOpen]);
 
-    // Auto-hide loading after timeout (iframe onLoad doesn't always fire for docs)
-    useEffect(() => {
-        if (isOpen && loading) {
-            const timer = setTimeout(() => setLoading(false), 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [isOpen, loading, iframeKey]);
-
     if (!isOpen) return null;
 
-    const isPdf = fileName?.toLowerCase().endsWith('.pdf') || mediaUrl?.toLowerCase().includes('.pdf');
-    const isOfficeDoc = fileName?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || mediaUrl?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
-    const isDocument = isPdf || isOfficeDoc;
-    const mobile = isMobile();
-
-    // Google Docs Viewer works universally (mobile + desktop) for public URLs
+    // Google Docs Viewer as absolute fallback for Office docs
     const googleViewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(mediaUrl)}`;
-    
-    // On desktop, try native PDF rendering first; on mobile, always use Google Docs Viewer
-    const getDocumentSrc = () => {
-        if (isPdf && !mobile) {
-            return mediaUrl + '#toolbar=1&navpanes=1&scrollbar=1';
-        }
-        // Mobile PDFs and all Office docs -> Google Docs Viewer
-        return googleViewerUrl;
-    };
 
     // Force download handler
     const handleDownload = async (e) => {
         e.preventDefault();
         try {
+            // If we already have the blob URL, use it directly
+            if (blobUrl) {
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.setAttribute('download', fileName || 'download');
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode.removeChild(link);
+                return;
+            }
             const response = await fetch(mediaUrl);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
@@ -139,31 +164,44 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                         {mediaType === 'file' && (
                             <>
                                 {/* Loading overlay */}
-                                {loading && isDocument && (
+                                {loading && (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
                                         <Loader2 size={40} className="text-primary animate-spin mb-4" />
                                         <p className="text-white/60 text-sm font-medium">Loading document...</p>
-                                        <p className="text-white/30 text-xs mt-2">This may take a moment</p>
                                     </div>
                                 )}
 
-                                {isDocument ? (
+                                {/* PDF: render via blob URL in iframe */}
+                                {isPdf && blobUrl && !loadError && (
                                     <iframe 
-                                        key={iframeKey}
-                                        src={getDocumentSrc()}
+                                        src={blobUrl}
+                                        className="w-full h-full bg-white" 
+                                        title={fileName}
+                                        style={{ border: 'none' }}
+                                    />
+                                )}
+
+                                {/* Office docs: use Google Docs Viewer */}
+                                {isOfficeDoc && !isPdf && !loadError && (
+                                    <iframe 
+                                        src={googleViewerUrl}
                                         className="w-full h-full bg-white" 
                                         title={fileName}
                                         onLoad={() => setLoading(false)}
                                         style={{ border: 'none' }}
-                                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                                     />
-                                ) : (
+                                )}
+
+                                {/* Error state or unsupported file */}
+                                {(loadError || (!isPdf && !isOfficeDoc && !loading)) && (
                                     <div className="text-center p-8 max-w-md bg-white/[0.02] border border-white/5 rounded-3xl backdrop-blur-md m-4">
                                         <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 text-primary shadow-lg shadow-primary/5">
-                                            <FileText size={32} />
+                                            {loadError ? <AlertCircle size={32} /> : <FileText size={32} />}
                                         </div>
                                         <h3 className="text-white font-bold text-lg mb-2">{fileName}</h3>
-                                        <p className="text-xs text-white/40 mb-6 uppercase tracking-wider font-semibold">Document Preview Unavailable</p>
+                                        <p className="text-xs text-white/40 mb-6 uppercase tracking-wider font-semibold">
+                                            {loadError ? 'Could not load document preview' : 'Preview not available for this file type'}
+                                        </p>
                                         <div className="flex flex-col gap-3">
                                             <button 
                                                 onClick={handleDownload}
@@ -172,12 +210,12 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                                                 Download File
                                             </button>
                                             <a 
-                                                href={googleViewerUrl}
+                                                href={mediaUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="px-6 py-3 bg-white/5 text-white border border-white/10 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-white/10 active:scale-95 transition-all text-center"
                                             >
-                                                Open in Google Docs Viewer
+                                                Open in New Tab
                                             </a>
                                         </div>
                                     </div>

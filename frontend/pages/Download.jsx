@@ -98,7 +98,7 @@ export const DownloadPage = () => {
                         _jsx("img", { 
                             src: "/screenshot-main.png", 
                             alt: "GoUnion App Feed", 
-                            className: "w-full h-full object-cover",
+                            className: "w-full h-full object-contain",
                             onError: (e) => {
                                 e.target.onerror = null;
                                 // Fallback gradient if image not found yet
@@ -111,55 +111,55 @@ export const DownloadPage = () => {
 
                 // Features Grid
                 _jsxs("section", { className: "pb-32", children: [
-                    _jsx("div", { className: "text-center mb-16", children: 
+                    _jsx("div", { className: "text-center mb-16 px-4", children: 
                         _jsx("h2", { className: "font-serif text-3xl md:text-4xl font-bold text-white", children: "Everything you need on campus" })
                     }),
-                    _jsxs("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6", children: [
+                    _jsxs("div", { className: "grid grid-cols-2 gap-3 md:gap-6 px-2 md:px-0", children: [
                         _jsxs(motion.div, { 
                             whileHover: { y: -5 },
-                            className: "glass-panel p-6 rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col h-full", 
+                            className: "glass-panel p-4 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col h-full", 
                             children: [
-                                _jsx("div", { className: "w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center mb-6", children: _jsx(MessageCircle, { className: "w-6 h-6 text-primary" }) }),
-                                _jsx("h3", { className: "text-lg font-bold text-white mb-2 font-serif", children: "Real-time Chat" }),
-                                _jsx("p", { className: "text-zinc-400 text-sm leading-relaxed mb-6 flex-grow", children: "Connect instantly with crystal-clear text, voice, and media messaging." }),
-                                _jsx("div", { className: "w-full aspect-[4/3] rounded-xl overflow-hidden bg-white/5 border border-white/10 mt-auto", children:
-                                    _jsx("img", { src: "/screenshot-chat.png", alt: "Chat Feature", className: "w-full h-full object-cover", onError: (e) => { e.target.style.display = 'none'; } })
+                                _jsx("div", { className: "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/20 flex items-center justify-center mb-4 md:mb-6", children: _jsx(MessageCircle, { className: "w-5 h-5 md:w-6 md:h-6 text-primary" }) }),
+                                _jsx("h3", { className: "text-sm md:text-lg font-bold text-white mb-2 font-serif", children: "Real-time Chat" }),
+                                _jsx("p", { className: "text-zinc-400 text-xs md:text-sm leading-relaxed mb-4 md:mb-6 flex-grow", children: "Connect instantly with crystal-clear text, voice, and media messaging." }),
+                                _jsx("div", { className: "w-full aspect-[4/3] rounded-xl overflow-hidden bg-black/20 border border-white/10 mt-auto flex items-center justify-center p-2", children:
+                                    _jsx("img", { src: "/screenshot-chat.png", alt: "Chat Feature", className: "w-full h-full object-contain", onError: (e) => { e.target.style.display = 'none'; } })
                                 })
                             ] 
                         }),
                         _jsxs(motion.div, { 
                             whileHover: { y: -5 },
-                            className: "glass-panel p-6 rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col h-full", 
+                            className: "glass-panel p-4 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col h-full", 
                             children: [
-                                _jsx("div", { className: "w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center mb-6", children: _jsx(Users, { className: "w-6 h-6 text-accent" }) }),
-                                _jsx("h3", { className: "text-lg font-bold text-white mb-2 font-serif", children: "Campus Groups" }),
-                                _jsx("p", { className: "text-zinc-400 text-sm leading-relaxed mb-6 flex-grow", children: "Join communities, study groups, and clubs specific to your university." }),
-                                _jsx("div", { className: "w-full aspect-[4/3] rounded-xl overflow-hidden bg-white/5 border border-white/10 mt-auto", children:
-                                    _jsx("img", { src: "/screenshot-groups.png", alt: "Groups Feature", className: "w-full h-full object-cover", onError: (e) => { e.target.style.display = 'none'; } })
+                                _jsx("div", { className: "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-accent/20 flex items-center justify-center mb-4 md:mb-6", children: _jsx(Users, { className: "w-5 h-5 md:w-6 md:h-6 text-accent" }) }),
+                                _jsx("h3", { className: "text-sm md:text-lg font-bold text-white mb-2 font-serif", children: "Campus Groups" }),
+                                _jsx("p", { className: "text-zinc-400 text-xs md:text-sm leading-relaxed mb-4 md:mb-6 flex-grow", children: "Join communities, study groups, and clubs specific to your university." }),
+                                _jsx("div", { className: "w-full aspect-[4/3] rounded-xl overflow-hidden bg-black/20 border border-white/10 mt-auto flex items-center justify-center p-2", children:
+                                    _jsx("img", { src: "/screenshot-groups.png", alt: "Groups Feature", className: "w-full h-full object-contain", onError: (e) => { e.target.style.display = 'none'; } })
                                 })
                             ] 
                         }),
                         _jsxs(motion.div, { 
                             whileHover: { y: -5 },
-                            className: "glass-panel p-6 rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col h-full", 
+                            className: "glass-panel p-4 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col h-full", 
                             children: [
-                                _jsx("div", { className: "w-12 h-12 rounded-2xl bg-fuchsia-500/20 flex items-center justify-center mb-6", children: _jsx(Globe, { className: "w-6 h-6 text-fuchsia-500" }) }),
-                                _jsx("h3", { className: "text-lg font-bold text-white mb-2 font-serif", children: "Discover" }),
-                                _jsx("p", { className: "text-zinc-400 text-sm leading-relaxed mb-6 flex-grow", children: "Explore trending campus stories, infinite reels, and find new peers." }),
-                                _jsx("div", { className: "w-full aspect-[4/3] rounded-xl overflow-hidden bg-white/5 border border-white/10 mt-auto", children:
-                                    _jsx("img", { src: "/screenshot-discover.png", alt: "Discover Feature", className: "w-full h-full object-cover", onError: (e) => { e.target.style.display = 'none'; } })
+                                _jsx("div", { className: "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-fuchsia-500/20 flex items-center justify-center mb-4 md:mb-6", children: _jsx(Globe, { className: "w-5 h-5 md:w-6 md:h-6 text-fuchsia-500" }) }),
+                                _jsx("h3", { className: "text-sm md:text-lg font-bold text-white mb-2 font-serif", children: "Discover" }),
+                                _jsx("p", { className: "text-zinc-400 text-xs md:text-sm leading-relaxed mb-4 md:mb-6 flex-grow", children: "Explore trending campus stories, infinite reels, and find new peers." }),
+                                _jsx("div", { className: "w-full aspect-[4/3] rounded-xl overflow-hidden bg-black/20 border border-white/10 mt-auto flex items-center justify-center p-2", children:
+                                    _jsx("img", { src: "/screenshot-discover.png", alt: "Discover Feature", className: "w-full h-full object-contain", onError: (e) => { e.target.style.display = 'none'; } })
                                 })
                             ] 
                         }),
                         _jsxs(motion.div, { 
                             whileHover: { y: -5 },
-                            className: "glass-panel p-6 rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col h-full", 
+                            className: "glass-panel p-4 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col h-full", 
                             children: [
-                                _jsx("div", { className: "w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center mb-6", children: _jsx(Layout, { className: "w-6 h-6 text-amber-500" }) }),
-                                _jsx("h3", { className: "text-lg font-bold text-white mb-2 font-serif", children: "Your Profile" }),
-                                _jsx("p", { className: "text-zinc-400 text-sm leading-relaxed mb-6 flex-grow", children: "Showcase your university, department, level, and build your campus identity." }),
-                                _jsx("div", { className: "w-full aspect-[4/3] rounded-xl overflow-hidden bg-white/5 border border-white/10 mt-auto", children:
-                                    _jsx("img", { src: "/screenshot-profile.png", alt: "Profile Feature", className: "w-full h-full object-cover", onError: (e) => { e.target.style.display = 'none'; } })
+                                _jsx("div", { className: "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-amber-500/20 flex items-center justify-center mb-4 md:mb-6", children: _jsx(Layout, { className: "w-5 h-5 md:w-6 md:h-6 text-amber-500" }) }),
+                                _jsx("h3", { className: "text-sm md:text-lg font-bold text-white mb-2 font-serif", children: "Your Profile" }),
+                                _jsx("p", { className: "text-zinc-400 text-xs md:text-sm leading-relaxed mb-4 md:mb-6 flex-grow", children: "Showcase your university, department, level, and build your campus identity." }),
+                                _jsx("div", { className: "w-full aspect-[4/3] rounded-xl overflow-hidden bg-black/20 border border-white/10 mt-auto flex items-center justify-center p-2", children:
+                                    _jsx("img", { src: "/screenshot-profile.png", alt: "Profile Feature", className: "w-full h-full object-contain", onError: (e) => { e.target.style.display = 'none'; } })
                                 })
                             ] 
                         })

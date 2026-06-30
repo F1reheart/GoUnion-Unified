@@ -83,6 +83,16 @@ adminRouter.post(
     const report = await Report.findOne({ id: req.params.id });
     if (!report) throw notFound('Report not found.');
     report.status = req.query.status || req.body.status || 'resolved';
+    
+    if (report.status === 'resolved' && report.post_id) {
+        const post = await Post.findOne({ id: report.post_id });
+        if (post) {
+            post.is_taken_down = true;
+            post.take_down_reason = req.body.take_down_reason || 'Violation of community guidelines.';
+            await post.save();
+        }
+    }
+    
     await report.save();
     res.json(report.toObject());
   }),

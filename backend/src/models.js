@@ -61,6 +61,8 @@ const postSchema = new Schema(
     video: { type: String, default: null },
     likes: { type: [String], default: [] },
     is_system: { type: Boolean, default: false },
+    is_taken_down: { type: Boolean, default: false },
+    take_down_reason: { type: String, default: null },
   },
   baseOptions,
 );

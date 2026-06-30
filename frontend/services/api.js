@@ -974,8 +974,8 @@ export const api = {
             const res = await apiClient.get('/admin/reports/');
             return res.data.map(normalizeReport);
         },
-        resolve: async (id, status) => {
-            const res = await apiClient.post(`/admin/reports/${id}/resolve?status=${status}`);
+        resolve: async (id, status, take_down_reason) => {
+            const res = await apiClient.post(`/admin/reports/${id}/resolve?status=${status}`, { take_down_reason });
             return res.data;
         },
     },

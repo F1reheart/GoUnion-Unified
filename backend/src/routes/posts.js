@@ -4,6 +4,7 @@ import { addNotification, serializeComment, serializePost } from '../store.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { HttpError, forbidden, notFound } from '../utils/httpError.js';
+import { getIo } from '../socket.js';
 
 export const postsRouter = Router();
 
@@ -33,7 +34,23 @@ postsRouter.post(
     const { caption = '', image = null, video = null, group_id = null } = req.body;
     if (!caption && !image && !video) throw new HttpError(400, 'caption, image or video is required.');
     const post = await Post.create({ user_id: req.user.id, group_id: group_id ? String(group_id) : null, caption, image, video, likes: [] });
-    res.status(201).json(await serializePost(post, req.user.id));
+    const serializedPost = await serializePost(post, req.user.id);
+    
+    if (group_id) {
+      try {
+        const io = getIo();
+        if (io) {
+          io.to(`group:${group_id}`).emit('new_group_message', {
+            groupId: group_id,
+            message: serializedPost
+          });
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    
+    res.status(201).json(serializedPost);
   }),
 );
 

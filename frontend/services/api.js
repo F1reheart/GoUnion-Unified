@@ -99,8 +99,11 @@ apiClient.interceptors.response.use((response) => {
             finally {
                 refreshPromise = null;
             }
+        } else {
+            // No refresh token available, must logout
+            useAuthStore.getState().logout();
+            return Promise.reject(error);
         }
-        // No refresh token but have access token — don't force logout, just reject
     }
     if (isSuspended) {
         useAuthStore.getState().logout();
@@ -166,6 +169,28 @@ const formatLastSeen = (value) => {
 };
 // Helper to transform user data
 export const transformUser = (user) => {
+    if (!user) {
+        return {
+            id: 'unknown',
+            username: 'Unknown User',
+            fullName: 'Unknown User',
+            email: '',
+            avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=unknown',
+            university: 'Unknown',
+            department: '',
+            level: '',
+            followers: 0,
+            following: 0,
+            bio: '',
+            coverUrl: '',
+            isFollowing: false,
+            isOnline: false,
+            lastSeen: 'recently',
+            role: 'user',
+            isActive: false,
+            totalLikes: 0,
+        };
+    }
     const profile = user.profile || user;
     const username = user.username || profile.username || 'gounion-user';
     const emailVal = user.email || profile.email || localStorage.getItem('login_email') || '';
@@ -196,7 +221,7 @@ export const transformUser = (user) => {
         totalLikes: user.total_likes ?? 0,
     };
 };
-const transformPost = (post) => {
+export const transformPost = (post) => {
     const userStr = authStorage.getItem('user_data');
     const user = userStr ? JSON.parse(userStr) : null;
     const currentUserId = user ? user.id : null;

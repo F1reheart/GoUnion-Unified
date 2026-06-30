@@ -234,14 +234,12 @@ const useNotificationPopups = () => {
         const subscribeToPush = async () => {
             if ('serviceWorker' in navigator && 'PushManager' in window) {
                 try {
-                    const registration = await navigator.serviceWorker.register('/sw.js');
-                    console.log('Service Worker registered for push notifications.');
+                    // Use the already-registered SW from VitePWA instead of re-registering
+                    const registration = await navigator.serviceWorker.ready;
                     const permission = await Notification.requestPermission();
                     if (permission === 'granted') {
-                        // Check if already subscribed
                         let subscription = await registration.pushManager.getSubscription();
                         if (!subscription) {
-                             // Convert VAPID key to Uint8Array (Mock VAPID key for now, backend must provide the real one)
                              const publicVapidKey = 'BKL5Eim5KjLP0TQX9h2ZliECO7-MGXTsDwRwOd3Ek4nDpp7RzvDbf344L4LQ-XP-UnCqRn5dro8xaNExAioXmb0';
                              const urlBase64ToUint8Array = (base64String) => {
                                  const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -254,10 +252,8 @@ const useNotificationPopups = () => {
                                  applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
                              });
                          }
-                         // Send subscription to backend
                          try {
                              await api.notifications.subscribePush(subscription);
-                             console.log('Push subscription ready:', subscription);
                          }
                         catch (e) {
                             console.error('Failed to send push subscription to backend', e);
@@ -265,7 +261,7 @@ const useNotificationPopups = () => {
                     }
                 }
                 catch (error) {
-                    console.error('Service Worker registration or push subscription failed:', error);
+                    console.error('Push subscription failed:', error);
                 }
             }
         };
@@ -512,6 +508,9 @@ const AppRoutes = () => {
     const currentPath = location.pathname.endsWith('/') && location.pathname !== '/'
         ? location.pathname.slice(0, -1)
         : location.pathname;
+    const isPwa = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isReturningUser = localStorage.getItem('returning_user') === 'true';
+
     if (!isAuthenticated && !PUBLIC_ROUTES.includes(currentPath) && currentPath !== "/welcome-back") {
         const hasResetToken = window.location.hash.includes("type=recovery") ||
             window.location.hash.includes("access_token=") ||
@@ -522,8 +521,14 @@ const AppRoutes = () => {
         if (isSessionLocked) {
             return _jsx(Navigate, { to: "/welcome-back", replace: true });
         }
+        return _jsx(Navigate, { to: (isPwa || isReturningUser) ? "/login" : "/download", replace: true });
+    }
+    
+    // If they try to view the download page but already have the app installed or have visited before
+    if (!isAuthenticated && currentPath === "/download" && (isPwa || isReturningUser)) {
         return _jsx(Navigate, { to: "/login", replace: true });
     }
+
     return (_jsx(ErrorBoundary, { children: _jsxs(_Fragment, { children: [isOffline && (_jsxs("div", { className: "fixed top-0 left-0 w-full z-[1000] bg-red-500/90 backdrop-blur-sm text-white text-[10px] sm:text-xs font-bold py-1 sm:py-1.5 text-center flex items-center justify-center gap-2 shadow-lg", children: [_jsx("span", { className: "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white animate-pulse" }), "You are currently offline"] })), showPageDots && _jsx(PageLoadingDots, {}), _jsx(PwaUpdater, {}), _jsxs(Routes, { children: [_jsx(Route, { path: "/login", element: isAuthenticated ? _jsx(Navigate, { to: "/" }) : _jsx(Login, {}) }), _jsx(Route, { path: "/download", element: _jsx(DownloadPage, {}) }), _jsx(Route, { path: "/forgot-password", element: _jsx(ForgotPassword, {}) }), _jsx(Route, { path: "/reset-password", element: _jsx(ResetPassword, {}) }), _jsx(Route, { path: "/confirm-email", element: _jsx(ConfirmEmail, {}) }), _jsx(Route, { path: "/confirm-identity", element: _jsx(ConfirmIdentity, {}) }), _jsx(Route, { path: "/", element: _jsx(PrivateRoute, { children: _jsx(Dashboard, {}) }) }), _jsx(Route, { path: "/groups", element: _jsx(PrivateRoute, { children: _jsx(Groups, {}) }) }), _jsx(Route, { path: "/groups/:id", element: _jsx(PrivateRoute, { children: _jsx(GroupDetails, {}) }) }), _jsx(Route, { path: "/messages", element: _jsx(PrivateRoute, { children: _jsx(Messages, {}) }) }), _jsx(Route, { path: "/alumni", element: _jsx(PrivateRoute, { children: _jsx(Alumni, {}) }) }), _jsx(Route, { path: "/profile/:username", element: _jsx(PrivateRoute, { children: _jsx(Profile, {}) }) }), _jsx(Route, { path: "/post/:id", element: _jsx(PrivateRoute, { children: _jsx(PostDetail, {}) }) }), _jsx(Route, { path: "/admin", element: _jsx(PrivateRoute, { children: _jsx(AdminPanel, {}) }) }), _jsx(Route, { path: "/discover", element: _jsx(PrivateRoute, { children: _jsx(Discover, {}) }) }), _jsx(Route, { path: "/sound/:soundName", element: _jsx(PrivateRoute, { children: _jsx(SoundFeed, {}) }) }), _jsx(Route, { path: "/settings", element: _jsx(PrivateRoute, { children: _jsx(Settings, {}) }) }), _jsx(Route, { path: "/notifications", element: _jsx(PrivateRoute, { children: _jsx(Notifications, {}) }) }), _jsx(Route, { path: "*", element: _jsx(Navigate, { to: "/" }) })] })] }) }));
 };
 const App = () => {

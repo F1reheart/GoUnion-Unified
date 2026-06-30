@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard, Maximize2, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { api, getApiErrorMessage } from "../services/api";
+import { api, getApiErrorMessage, transformPost } from "../services/api";
 import { Skeleton } from "../components/ui/Skeleton";
 import { Avatar } from "../components/ui/Avatar";
 import { authStorage } from "../utils/persistentStorage";
@@ -84,7 +84,8 @@ export const GroupDetails = () => {
         queryKey: ["group-posts", id],
         queryFn: () => api.groups.getPosts(id),
         enabled: !!id && canViewMessages,
-        refetchInterval: canViewMessages ? 3000 : false,
+        refetchInterval: canViewMessages ? 5000 : false,
+        staleTime: 4000,
     });
 
     const onlineMembers = (members || []).filter((m) => m.user?.is_online || m.user?.isOnline);
@@ -112,17 +113,36 @@ export const GroupDetails = () => {
             }
         };
 
+        const handleNewMessage = (data) => {
+            if (String(data.groupId) === String(id)) {
+                queryClient.setQueryData(["group-posts", id], (old) => {
+                    if (!old) return [transformPost(data.message)];
+                    const transformed = transformPost(data.message);
+                    // Match by real ID or by temp optimistic ID
+                    const existsIndex = old.findIndex(p => String(p.id) === String(transformed.id) || (String(p.id).startsWith('temp-') && p.content === transformed.content));
+                    if (existsIndex !== -1) {
+                        const newOld = [...old];
+                        newOld[existsIndex] = transformed;
+                        return newOld;
+                    }
+                    return [...old, transformed];
+                });
+            }
+        };
+
         window.socket.emit('joinGroup', id);
         window.socket.on('typing', handleTypingEvent);
+        window.socket.on('new_group_message', handleNewMessage);
 
         return () => {
             if (window.socket) {
                 window.socket.off('typing', handleTypingEvent);
+                window.socket.off('new_group_message', handleNewMessage);
                 window.socket.emit('typing', { groupId: id, isTyping: false });
             }
             setTypingUserIds(new Set());
         };
-    }, [id, currentUserId]);
+    }, [id, currentUserId, queryClient]);
 
     const typingMembersNames = React.useMemo(() => {
         const names = [];
@@ -187,7 +207,7 @@ export const GroupDetails = () => {
                     id: currentUserId,
                     username: "you",
                     fullName: "You",
-                    avatarUrl: authStorage.getItem('user_data') ? JSON.parse(authStorage.getItem('user_data')).avatarUrl : null
+                    avatarUrl: (() => { try { const d = authStorage.getItem('user_data'); return d ? JSON.parse(d).avatarUrl : null; } catch { return null; } })()
                 },
                 createdAt: new Date().toISOString(),
                 likes: 0,

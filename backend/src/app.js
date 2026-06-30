@@ -58,6 +58,16 @@ app.get('/health', (_req, res) => {
 });
 
 const apiRouter = express.Router();
+apiRouter.get('/health', (_req, res) => {
+  res.json({
+    status: 'online',
+    timestamp: new Date().toISOString(),
+    environment: {
+      cloudinary_configured: Boolean(process.env.CLOUDINARY_URL || process.env.CLOUDINARY_CLOUD_NAME),
+      mongodb_connected: mongoose.connection.readyState === 1,
+    },
+  });
+});
 apiRouter.use(authRouter);
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/users', usersRouter);

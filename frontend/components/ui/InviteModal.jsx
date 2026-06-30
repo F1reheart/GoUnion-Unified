@@ -8,7 +8,10 @@ export const InviteModal = ({ isOpen, onClose, username }) => {
     const { toast } = useToast();
     const [copied, setCopied] = useState(false);
     
-    const inviteLink = `${window.location.origin}/login?isSignup=true`;
+    const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? window.location.origin 
+        : 'https://gounion.me';
+    const inviteLink = `${baseUrl}/login?isSignup=true`;
     const shareMessage = `Hey! Join me on GoUnion, the exclusive real-time college campus network for students. Sign up here: ${inviteLink}`;
     
     const handleCopy = async () => {

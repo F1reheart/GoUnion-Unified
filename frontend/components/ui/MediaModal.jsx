@@ -1,9 +1,18 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import React, { useEffect } from 'react';
-import { ChevronLeft, Download, FileText, ExternalLink } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ChevronLeft, Download, FileText, ExternalLink, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) => {
+    const [pdfLoadError, setPdfLoadError] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    // Reset states when URL changes
+    useEffect(() => {
+        setPdfLoadError(false);
+        setLoading(true);
+    }, [mediaUrl]);
+
     // Prevent background scrolling when open
     useEffect(() => {
         if (isOpen) {
@@ -20,6 +29,9 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
 
     const isPdf = fileName?.toLowerCase().endsWith('.pdf') || mediaUrl?.toLowerCase().includes('.pdf');
     const isOfficeDoc = fileName?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || mediaUrl?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
+
+    // Use Google Docs Viewer for PDF and Office docs (works for public URLs)
+    const googleViewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(mediaUrl)}`;
 
     // Force download handler to bypass Service Worker interception
     const handleDownload = async (e) => {
@@ -109,33 +121,70 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                         )}
 
                         {mediaType === 'file' && (
-                            isPdf ? (
-                                <iframe 
-                                    src={mediaUrl} 
-                                    className="w-full h-full bg-white" 
-                                    title={fileName}
-                                />
-                            ) : isOfficeDoc ? (
-                                <iframe 
-                                    src={mediaUrl}
-                                    className="w-full h-full bg-white" 
-                                    title={fileName}
-                                />
-                            ) : (
-                                <div className="text-center p-8 max-w-md bg-white/[0.02] border border-white/5 rounded-3xl backdrop-blur-md m-4">
-                                    <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 text-primary shadow-lg shadow-primary/5">
-                                        <FileText size={32} />
+                            <>
+                                {/* Loading spinner */}
+                                {loading && (isPdf || isOfficeDoc) && (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
+                                        <Loader2 size={40} className="text-primary animate-spin mb-4" />
+                                        <p className="text-white/60 text-sm font-medium">Loading document...</p>
                                     </div>
-                                    <h3 className="text-white font-bold text-lg mb-2">{fileName}</h3>
-                                    <p className="text-xs text-white/40 mb-6 uppercase tracking-wider font-semibold">Document Preview Unavailable</p>
-                                    <button 
-                                        onClick={handleDownload}
-                                        className="px-6 py-3 bg-primary text-black rounded-xl font-bold uppercase tracking-widest text-xs hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/10"
-                                    >
-                                        Download File
-                                    </button>
-                                </div>
-                            )
+                                )}
+
+                                {isPdf && !pdfLoadError ? (
+                                    <>
+                                        {/* Try native iframe first */}
+                                        <iframe 
+                                            src={mediaUrl + '#toolbar=1&navpanes=1&scrollbar=1'}
+                                            className="w-full h-full bg-white" 
+                                            title={fileName}
+                                            onLoad={() => setLoading(false)}
+                                            onError={() => {
+                                                setPdfLoadError(true);
+                                                setLoading(false);
+                                            }}
+                                        />
+                                    </>
+                                ) : isPdf && pdfLoadError ? (
+                                    /* Fallback to Google Docs Viewer */
+                                    <iframe 
+                                        src={googleViewerUrl}
+                                        className="w-full h-full bg-white" 
+                                        title={fileName}
+                                        onLoad={() => setLoading(false)}
+                                    />
+                                ) : isOfficeDoc ? (
+                                    <iframe 
+                                        src={googleViewerUrl}
+                                        className="w-full h-full bg-white" 
+                                        title={fileName}
+                                        onLoad={() => setLoading(false)}
+                                    />
+                                ) : (
+                                    <div className="text-center p-8 max-w-md bg-white/[0.02] border border-white/5 rounded-3xl backdrop-blur-md m-4">
+                                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 text-primary shadow-lg shadow-primary/5">
+                                            <FileText size={32} />
+                                        </div>
+                                        <h3 className="text-white font-bold text-lg mb-2">{fileName}</h3>
+                                        <p className="text-xs text-white/40 mb-6 uppercase tracking-wider font-semibold">Document Preview Unavailable</p>
+                                        <div className="flex flex-col gap-3">
+                                            <button 
+                                                onClick={handleDownload}
+                                                className="px-6 py-3 bg-primary text-black rounded-xl font-bold uppercase tracking-widest text-xs hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/10"
+                                            >
+                                                Download File
+                                            </button>
+                                            <a 
+                                                href={googleViewerUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="px-6 py-3 bg-white/5 text-white border border-white/10 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-white/10 active:scale-95 transition-all text-center"
+                                            >
+                                                Try Google Docs Viewer
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </motion.div>

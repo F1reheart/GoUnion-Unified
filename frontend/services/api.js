@@ -534,7 +534,7 @@ export const api = {
         },
         createReel: async (data) => {
             if (!data.image?.type?.startsWith('video/')) {
-                throw new Error('Discover posts must be videos.');
+                throw new Error('Goto posts must be videos.');
             }
             const mediaUrl = await uploadFile(data.image);
             const res = await apiClient.post('/posts/', {

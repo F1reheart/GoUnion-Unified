@@ -30,7 +30,7 @@ const getSoundName = (post) => {
     }
     return null;
 };
-export const Discover = () => {
+export const Goto = () => {
     const queryClient = useQueryClient();
     const { user: currentUser } = useAuthStore();
     const [isMuted, setIsMuted] = useState(false);
@@ -39,12 +39,12 @@ export const Discover = () => {
     const [loadedMedia, setLoadedMedia] = useState({});
     const [pausedVideos, setPausedVideos] = useState({});
     const [videoProgress, setVideoProgress] = useState({});
-    const [discoverSeed, setDiscoverSeed] = useState(() => Math.random());
+    const [gotoSeed, setGotoSeed] = useState(() => Math.random());
     const loadMoreRef = useRef(null);
     const videoRefs = useRef({});
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
-        queryKey: ["discover-reels", discoverSeed],
-        queryFn: ({ pageParam }) => api.posts.getReels({ pageParam, seed: discoverSeed }),
+        queryKey: ["goto-reels", gotoSeed],
+        queryFn: ({ pageParam }) => api.posts.getReels({ pageParam, seed: gotoSeed }),
         initialPageParam: 0,
         getNextPageParam: (lastPage, allPages) => lastPage.length > 0 ? allPages.length : undefined,
         staleTime: 60000,
@@ -52,9 +52,9 @@ export const Discover = () => {
     const likeMutation = useMutation({
         mutationFn: (postId) => api.posts.like(postId),
         onMutate: async (postId) => {
-            await queryClient.cancelQueries({ queryKey: ["discover-reels"] });
-            const previousReels = queryClient.getQueriesData({ queryKey: ["discover-reels"] });
-            queryClient.setQueryData(["discover-reels", discoverSeed], (old) => {
+            await queryClient.cancelQueries({ queryKey: ["goto-reels"] });
+            const previousReels = queryClient.getQueriesData({ queryKey: ["goto-reels"] });
+            queryClient.setQueryData(["goto-reels", gotoSeed], (old) => {
                 if (!old?.pages)
                     return old;
                 return {
@@ -79,13 +79,13 @@ export const Discover = () => {
             });
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["discover-reels"] });
+            queryClient.invalidateQueries({ queryKey: ["goto-reels"] });
         },
     });
     const deleteMutation = useMutation({
         mutationFn: (postId) => api.posts.delete(postId),
         onSuccess: (_, postId) => {
-            queryClient.setQueriesData({ queryKey: ["discover-reels"] }, (old) => {
+            queryClient.setQueriesData({ queryKey: ["goto-reels"] }, (old) => {
                 if (!old?.pages)
                     return old;
                 return {
@@ -93,19 +93,19 @@ export const Discover = () => {
                     pages: old.pages.map((page) => page.filter((p) => p.id !== postId))
                 };
             });
-            queryClient.invalidateQueries({ queryKey: ["discover-reels"] });
+            queryClient.invalidateQueries({ queryKey: ["goto-reels"] });
             queryClient.invalidateQueries({ queryKey: ["feed"] });
             queryClient.invalidateQueries({ queryKey: ["post", postId] });
         },
     });
     useEffect(() => {
         const handleExternalRefresh = () => {
-            setDiscoverSeed(Math.random());
-            queryClient.invalidateQueries({ queryKey: ["discover-reels"] });
+            setGotoSeed(Math.random());
+            queryClient.invalidateQueries({ queryKey: ["goto-reels"] });
             window.scrollTo({ top: 0, behavior: "smooth" });
         };
-        window.addEventListener("gounion-refresh-discover", handleExternalRefresh);
-        return () => window.removeEventListener("gounion-refresh-discover", handleExternalRefresh);
+        window.addEventListener("gounion-refresh-goto", handleExternalRefresh);
+        return () => window.removeEventListener("gounion-refresh-goto", handleExternalRefresh);
     }, [queryClient]);
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -218,7 +218,7 @@ export const Discover = () => {
                                                             e.preventDefault();
                                                             e.stopPropagation();
                                                             api.profiles.follow(reel.author.id);
-                                                            queryClient.setQueryData(["discover-reels", discoverSeed], (old) => {
+                                                            queryClient.setQueryData(["goto-reels", gotoSeed], (old) => {
                                                                 if (!old?.pages)
                                                                     return old;
                                                                 return {

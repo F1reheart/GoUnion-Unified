@@ -32,7 +32,7 @@ export const MobileNav = () => {
 
     const NAV_LEFT = [
         { icon: Home, label: "Feed", path: "/" },
-        { icon: Compass, label: "Discover", path: "/discover" },
+        { icon: Compass, label: "Goto", path: "/goto" },
     ];
 
     const NAV_RIGHT = [
@@ -54,7 +54,7 @@ export const MobileNav = () => {
     const renderNavItem = (item) => (
         <NavLink key={item.path} to={item.path} onClick={() => {
             if (location.pathname === "/" && item.path === "/") window.dispatchEvent(new Event("gounion-refresh-feed"));
-            if (location.pathname === "/discover" && item.path === "/discover") window.dispatchEvent(new Event("gounion-refresh-discover"));
+            if (location.pathname === "/goto" && item.path === "/goto") window.dispatchEvent(new Event("gounion-refresh-goto"));
         }} className={({ isActive }) => `relative flex flex-col items-center justify-center h-full flex-1 transition-all duration-300 ${isActive ? "text-primary" : "text-white/40 hover:text-white/80"}`}>
             {({ isActive }) => (
                 <>

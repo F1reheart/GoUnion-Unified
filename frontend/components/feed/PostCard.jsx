@@ -47,7 +47,7 @@ export const PostCard = ({ post }) => {
                 pages: old.pages.map((page) => page.map(updater)),
             };
         });
-        queryClient.setQueriesData({ queryKey: ["discover-reels"] }, (old) => {
+        queryClient.setQueriesData({ queryKey: ["goto-reels"] }, (old) => {
             if (!old?.pages)
                 return old;
             return {
@@ -64,7 +64,7 @@ export const PostCard = ({ post }) => {
         mutationFn: () => api.posts.like(post.id),
         onMutate: async () => {
             await queryClient.cancelQueries({ queryKey: ["feed"] });
-            await queryClient.cancelQueries({ queryKey: ["discover-reels"] });
+            await queryClient.cancelQueries({ queryKey: ["goto-reels"] });
             const updatePost = (p) => {
                 if (p.id === post.id) {
                     return {
@@ -79,11 +79,11 @@ export const PostCard = ({ post }) => {
         },
         onError: () => {
             queryClient.invalidateQueries({ queryKey: ["feed"] });
-            queryClient.invalidateQueries({ queryKey: ["discover-reels"] });
+            queryClient.invalidateQueries({ queryKey: ["goto-reels"] });
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["feed"] });
-            queryClient.invalidateQueries({ queryKey: ["discover-reels"] });
+            queryClient.invalidateQueries({ queryKey: ["goto-reels"] });
             queryClient.invalidateQueries({ queryKey: ["post", post.id] });
             queryClient.invalidateQueries({ queryKey: ["profile-posts", post.author.username] });
             if (post.groupId) {
@@ -103,13 +103,13 @@ export const PostCard = ({ post }) => {
         onMutate: async () => {
             setShowMenu(false);
             await queryClient.cancelQueries({ queryKey: ["feed"] });
-            await queryClient.cancelQueries({ queryKey: ["discover-reels"] });
+            await queryClient.cancelQueries({ queryKey: ["goto-reels"] });
             await queryClient.cancelQueries({ queryKey: ["profile-posts", post.author.username] });
             if (post.groupId) {
                 await queryClient.cancelQueries({ queryKey: ["group-posts", post.groupId] });
             }
             const previousFeed = queryClient.getQueriesData({ queryKey: ["feed"] });
-            const previousDiscover = queryClient.getQueriesData({ queryKey: ["discover-reels"] });
+            const previousGoto = queryClient.getQueriesData({ queryKey: ["goto-reels"] });
             const previousProfile = queryClient.getQueryData(["profile-posts", post.author.username]);
             const previousGroup = post.groupId ? queryClient.getQueryData(["group-posts", post.groupId]) : undefined;
             queryClient.setQueriesData({ queryKey: ["feed"] }, (old) => {
@@ -117,7 +117,7 @@ export const PostCard = ({ post }) => {
                     return old;
                 return { ...old, pages: old.pages.map((page) => page.filter((item) => item.id !== post.id)) };
             });
-            queryClient.setQueriesData({ queryKey: ["discover-reels"] }, (old) => {
+            queryClient.setQueriesData({ queryKey: ["goto-reels"] }, (old) => {
                 if (!old?.pages)
                     return old;
                 return { ...old, pages: old.pages.map((page) => page.filter((item) => item.id !== post.id)) };
@@ -126,14 +126,14 @@ export const PostCard = ({ post }) => {
             if (post.groupId) {
                 queryClient.setQueryData(["group-posts", post.groupId], (old) => Array.isArray(old) ? old.filter((item) => item.id !== post.id) : old);
             }
-            return { previousFeed, previousDiscover, previousProfile, previousGroup };
+            return { previousFeed, previousGoto, previousProfile, previousGroup };
         },
         onSuccess: () => {
             toast("Post deleted successfully", "success");
         },
         onError: (_err, _vars, context) => {
             context?.previousFeed?.forEach(([key, value]) => queryClient.setQueryData(key, value));
-            context?.previousDiscover?.forEach(([key, value]) => queryClient.setQueryData(key, value));
+            context?.previousGoto?.forEach(([key, value]) => queryClient.setQueryData(key, value));
             queryClient.setQueryData(["profile-posts", post.author.username], context?.previousProfile);
             if (post.groupId) {
                 queryClient.setQueryData(["group-posts", post.groupId], context?.previousGroup);
@@ -142,7 +142,7 @@ export const PostCard = ({ post }) => {
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["feed"] });
-            queryClient.invalidateQueries({ queryKey: ["discover-reels"] });
+            queryClient.invalidateQueries({ queryKey: ["goto-reels"] });
             queryClient.invalidateQueries({ queryKey: ["post", post.id] });
             queryClient.invalidateQueries({ queryKey: ["profile-posts", post.author.username] });
             if (post.groupId) {

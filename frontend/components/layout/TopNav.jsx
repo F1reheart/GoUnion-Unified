@@ -29,7 +29,7 @@ export const TopNav = () => {
     const queryClient = useQueryClient();
     const unreadCount = notifications?.filter((n) => !n.read).length || 0;
     const location = useLocation();
-    const isDiscover = location.pathname === "/discover";
+    const isGoto = location.pathname === "/goto";
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {

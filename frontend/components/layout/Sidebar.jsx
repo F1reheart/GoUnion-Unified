@@ -11,7 +11,7 @@ import { InviteModal } from "../ui/InviteModal";
 
 const NAV_ITEMS = [
     { icon: Home, label: "Home", path: "/" },
-    { icon: Compass, label: "Discover", path: "/discover" },
+    { icon: Compass, label: "Goto", path: "/goto" },
     { icon: Users, label: "Groups", path: "/groups" },
     { icon: MessageSquare, label: "Messages", path: "/messages" },
     { icon: Bell, label: "Notifications", path: "/notifications" },
@@ -45,8 +45,8 @@ export const Sidebar = () => {
                                 if (location.pathname === "/" && item.path === "/") {
                                     window.dispatchEvent(new Event("gounion-refresh-feed"));
                                 }
-                                if (location.pathname === "/discover" && item.path === "/discover") {
-                                    window.dispatchEvent(new Event("gounion-refresh-discover"));
+                                if (location.pathname === "/goto" && item.path === "/goto") {
+                                    window.dispatchEvent(new Event("gounion-refresh-goto"));
                                 }
                             }, className: `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group
                 ${isActive && !isComingSoon

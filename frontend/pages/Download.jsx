@@ -53,7 +53,7 @@ export const DownloadPage = () => {
                         _jsx(motion.p, { 
                             initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: 0.2 },
                             className: "text-zinc-400 text-lg md:text-xl mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed", children: 
-                            "GoUnion is the exclusive real-time social network for college students. Join groups, discover stories, and chat with peers in a premium, lightning-fast app."
+                            "GoUnion is the exclusive real-time social network for college students. Join groups, goto stories, and chat with peers in a premium, lightning-fast app."
                         }),
                         _jsxs(motion.div, { 
                             initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: 0.3 },
@@ -144,10 +144,10 @@ export const DownloadPage = () => {
                             className: "glass-panel p-4 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col h-full", 
                             children: [
                                 _jsx("div", { className: "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-fuchsia-500/20 flex items-center justify-center mb-4 md:mb-6", children: _jsx(Globe, { className: "w-5 h-5 md:w-6 md:h-6 text-fuchsia-500" }) }),
-                                _jsx("h3", { className: "text-sm md:text-lg font-bold text-white mb-2 font-serif", children: "Discover" }),
+                                _jsx("h3", { className: "text-sm md:text-lg font-bold text-white mb-2 font-serif", children: "Goto" }),
                                 _jsx("p", { className: "text-zinc-400 text-xs md:text-sm leading-relaxed mb-4 md:mb-6 flex-grow", children: "Explore trending campus stories, infinite reels, and find new peers." }),
                                 _jsx("div", { className: "w-full aspect-[4/3] rounded-xl overflow-hidden bg-black/20 border border-white/10 mt-auto flex items-center justify-center p-2", children:
-                                    _jsx("img", { src: "/screenshot-discover.png", alt: "Discover Feature", className: "w-full h-full object-contain", onError: (e) => { e.target.style.display = 'none'; } })
+                                    _jsx("img", { src: "/screenshot-goto.png", alt: "Goto Feature", className: "w-full h-full object-contain", onError: (e) => { e.target.style.display = 'none'; } })
                                 })
                             ] 
                         }),

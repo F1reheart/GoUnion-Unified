@@ -50,7 +50,7 @@ export const AdminPostModal = ({ postId, onClose }) => {
                                 </div>
                             ) : (
                                 <div className="pb-10">
-                                    <PostCard post={post} />
+                                    <PostCard post={post} defaultShowComments={true} />
                                 </div>
                             )}
                         </div>

@@ -9,9 +9,9 @@ import { CommentSection } from "./CommentSection";
 import { useAuthStore } from "../../store";
 import { MediaPlayer } from "../ui/MediaPlayer";
 import { useToast } from "../ui/Toast";
-export const PostCard = ({ post }) => {
+export const PostCard = ({ post, defaultShowComments = false }) => {
     const { toast } = useToast();
-    const [showComments, setShowComments] = React.useState(false);
+    const [showComments, setShowComments] = React.useState(defaultShowComments);
     const queryClient = useQueryClient();
     const { user: currentUser } = useAuthStore();
     const [showMenu, setShowMenu] = React.useState(false);

@@ -18,6 +18,7 @@ import {
   Database,
   LayoutGrid,
   Activity,
+  FileText,
 } from "lucide-react";
 export const AdminPanel = () => {
   const { user } = useAuthStore();
@@ -556,7 +557,7 @@ export const AdminPanel = () => {
                                         "text-xs text-zinc-400 border-l-[3px] border-accent/50 pl-4 py-3 bg-white/5 rounded-r-lg mt-3 cursor-pointer hover:bg-white/10 transition-colors",
                                       onClick: () =>
                                         setSelectedReportedPostId(
-                                          r.post?.id || r.postId || r.post_id,
+                                          r.post?.id || r.postId || r.post_id || r.comment?.post_id
                                         ),
                                       children: [
                                         _jsx("span", {
@@ -564,45 +565,44 @@ export const AdminPanel = () => {
                                             "text-[10px] font-black uppercase text-accent mb-2 block",
                                           children: "Context Flagged:",
                                         }),
-                                        _jsxs("span", {
-                                          className:
-                                            "text-[10px] text-zinc-500 uppercase tracking-widest",
-                                          children: [
-                                            "Target Content ID: ",
-                                            r.post?.id ||
-                                              r.postId ||
-                                              r.post_id ||
-                                              "Unknown",
-                                          ],
-                                        }),
-                                        " ",
-                                        _jsx("br", {}),
                                         _jsx("span", {
                                           className:
                                             "text-zinc-300 block mt-1 whitespace-pre-wrap",
                                           children: r.post
-                                            ? `"${r.post.content || ""}"`
-                                            : "(Context missing or post already deleted)",
+                                            ? `"${r.post.content || "(No text content)"}"`
+                                            : r.comment 
+                                              ? `Comment: "${r.comment.content || ""}"` 
+                                              : "(Context missing or post already deleted)",
                                         }),
-                                        r.post?.imageUrl &&
-                                          (r.post.imageUrl.match(
-                                            /\.(mp4|webm|ogg)$/i,
-                                          )
-                                            ? _jsx("video", {
-                                                src: r.post.imageUrl,
+                                        r.post && (r.post.videoUrl || (r.post.imageUrl && r.post.imageUrl.match(/\.(mp4|webm|ogg)$/i))) && (
+                                            _jsx("video", {
+                                                src: r.post.videoUrl || r.post.imageUrl,
                                                 className:
                                                   "mt-3 max-h-40 rounded-xl object-contain bg-black/40 border border-white/10",
                                                 muted: true,
                                                 autoPlay: true,
                                                 loop: true,
                                                 playsInline: true,
-                                              })
-                                            : _jsx("img", {
+                                                controls: true,
+                                            })
+                                        ),
+                                        r.post && r.post.imageUrl && !r.post.imageUrl.match(/\.(mp4|webm|ogg)$/i) && (
+                                            _jsx("img", {
                                                 src: r.post.imageUrl,
                                                 alt: "Reported Media",
                                                 className:
                                                   "mt-3 max-h-40 rounded-xl object-contain bg-black/40 border border-white/10",
-                                              })),
+                                            })
+                                        ),
+                                        r.post && r.post.fileUrl && (
+                                            _jsxs("div", {
+                                                className: "mt-3 p-3 bg-white/5 border border-white/10 rounded-xl flex items-center gap-3",
+                                                children: [
+                                                    _jsx(FileText, { size: 20, className: "text-zinc-400" }),
+                                                    _jsx("span", { className: "text-sm text-zinc-300 font-medium", children: r.post.fileName || "Attached File" })
+                                                ]
+                                            })
+                                        ),
                                       ],
                                     }),
                                   ],

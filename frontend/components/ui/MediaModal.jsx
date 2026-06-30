@@ -1,16 +1,20 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, Download, FileText, ExternalLink, Loader2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Download, FileText, ExternalLink, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Detect mobile browsers - they can't render PDFs in iframes natively
+const isMobile = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+    || (window.innerWidth < 768);
+
 export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) => {
-    const [pdfLoadError, setPdfLoadError] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [iframeKey, setIframeKey] = useState(0);
 
     // Reset states when URL changes
     useEffect(() => {
-        setPdfLoadError(false);
         setLoading(true);
+        setIframeKey(prev => prev + 1);
     }, [mediaUrl]);
 
     // Prevent background scrolling when open
@@ -25,15 +29,34 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
         };
     }, [isOpen]);
 
+    // Auto-hide loading after timeout (iframe onLoad doesn't always fire for docs)
+    useEffect(() => {
+        if (isOpen && loading) {
+            const timer = setTimeout(() => setLoading(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, loading, iframeKey]);
+
     if (!isOpen) return null;
 
     const isPdf = fileName?.toLowerCase().endsWith('.pdf') || mediaUrl?.toLowerCase().includes('.pdf');
     const isOfficeDoc = fileName?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || mediaUrl?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
+    const isDocument = isPdf || isOfficeDoc;
+    const mobile = isMobile();
 
-    // Use Google Docs Viewer for PDF and Office docs (works for public URLs)
+    // Google Docs Viewer works universally (mobile + desktop) for public URLs
     const googleViewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(mediaUrl)}`;
+    
+    // On desktop, try native PDF rendering first; on mobile, always use Google Docs Viewer
+    const getDocumentSrc = () => {
+        if (isPdf && !mobile) {
+            return mediaUrl + '#toolbar=1&navpanes=1&scrollbar=1';
+        }
+        // Mobile PDFs and all Office docs -> Google Docs Viewer
+        return googleViewerUrl;
+    };
 
-    // Force download handler to bypass Service Worker interception
+    // Force download handler
     const handleDownload = async (e) => {
         e.preventDefault();
         try {
@@ -48,7 +71,6 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
             link.parentNode.removeChild(link);
             window.URL.revokeObjectURL(url);
         } catch (error) {
-            // Fallback to direct tab open if fetch fails
             window.open(mediaUrl, '_blank');
         }
     };
@@ -56,7 +78,6 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-[9999] flex flex-col bg-[#09090b]">
-                {/* Full Screen Main Content */}
                 <motion.div
                     initial={{ y: "100%", opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -64,10 +85,9 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                     transition={{ type: "spring", bounce: 0, duration: 0.4 }}
                     className="flex flex-col w-full h-full overflow-hidden"
                 >
-                    {/* Header Controls */}
+                    {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-black/50 backdrop-blur-md shrink-0">
                         <div className="flex items-center gap-4 min-w-0">
-                            {/* Back button */}
                             <button 
                                 onClick={onClose}
                                 className="flex items-center gap-1 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
@@ -75,12 +95,9 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                                 <ChevronLeft size={20} />
                                 <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline">Back</span>
                             </button>
-                            {/* File Name */}
                             <h2 className="text-white font-bold text-sm truncate max-w-[200px] sm:max-w-md">{fileName || 'Media'}</h2>
                         </div>
-
                         <div className="flex items-center gap-2 shrink-0">
-                            {/* External Link */}
                             <a 
                                 href={mediaUrl} 
                                 target="_blank" 
@@ -90,7 +107,6 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                             >
                                 <ExternalLink size={18} />
                             </a>
-                            {/* Download button */}
                             <button 
                                 onClick={handleDownload}
                                 className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all"
@@ -122,42 +138,24 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
 
                         {mediaType === 'file' && (
                             <>
-                                {/* Loading spinner */}
-                                {loading && (isPdf || isOfficeDoc) && (
+                                {/* Loading overlay */}
+                                {loading && isDocument && (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
                                         <Loader2 size={40} className="text-primary animate-spin mb-4" />
                                         <p className="text-white/60 text-sm font-medium">Loading document...</p>
+                                        <p className="text-white/30 text-xs mt-2">This may take a moment</p>
                                     </div>
                                 )}
 
-                                {isPdf && !pdfLoadError ? (
-                                    <>
-                                        {/* Try native iframe first */}
-                                        <iframe 
-                                            src={mediaUrl + '#toolbar=1&navpanes=1&scrollbar=1'}
-                                            className="w-full h-full bg-white" 
-                                            title={fileName}
-                                            onLoad={() => setLoading(false)}
-                                            onError={() => {
-                                                setPdfLoadError(true);
-                                                setLoading(false);
-                                            }}
-                                        />
-                                    </>
-                                ) : isPdf && pdfLoadError ? (
-                                    /* Fallback to Google Docs Viewer */
+                                {isDocument ? (
                                     <iframe 
-                                        src={googleViewerUrl}
+                                        key={iframeKey}
+                                        src={getDocumentSrc()}
                                         className="w-full h-full bg-white" 
                                         title={fileName}
                                         onLoad={() => setLoading(false)}
-                                    />
-                                ) : isOfficeDoc ? (
-                                    <iframe 
-                                        src={googleViewerUrl}
-                                        className="w-full h-full bg-white" 
-                                        title={fileName}
-                                        onLoad={() => setLoading(false)}
+                                        style={{ border: 'none' }}
+                                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                                     />
                                 ) : (
                                     <div className="text-center p-8 max-w-md bg-white/[0.02] border border-white/5 rounded-3xl backdrop-blur-md m-4">
@@ -179,7 +177,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                                                 rel="noopener noreferrer"
                                                 className="px-6 py-3 bg-white/5 text-white border border-white/10 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-white/10 active:scale-95 transition-all text-center"
                                             >
-                                                Try Google Docs Viewer
+                                                Open in Google Docs Viewer
                                             </a>
                                         </div>
                                     </div>

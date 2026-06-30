@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard, Maximize2, Download, Share, Search, Share2, ExternalLink } from "lucide-react";

@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard, Maximize2, Download, Share, Search, Share2 } from "lucide-react";
+import { ArrowLeft, Users, Image as ImageIcon, Send, Shield, Globe, Lock, Clock, Check, CheckCheck, X, Sparkles, Trash2, Plus, Camera, Mic, Smile, LogOut, Reply, MoreVertical, Keyboard, Maximize2, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api, getApiErrorMessage, transformPost } from "../services/api";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -47,13 +47,6 @@ export const GroupDetails = () => {
     const [editName, setEditName] = useState("");
     const [editDescription, setEditDescription] = useState("");
     const [selectedMedia, setSelectedMedia] = useState(null);
-    const [msgToForward, setMsgToForward] = useState(null);
-    const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
-    const [searchForwardTerm, setSearchForwardTerm] = useState("");
-    const [highlightMsgId, setHighlightMsgId] = useState(() => {
-        const hash = window.location.hash;
-        return hash.startsWith('#msg-') ? hash.replace('#msg-', '') : null;
-    });
     const [editPrivacy, setEditPrivacy] = useState("public");
 
 
@@ -94,12 +87,6 @@ export const GroupDetails = () => {
         enabled: !!id && canViewMessages,
         refetchInterval: canViewMessages ? 5000 : false,
         staleTime: 4000,
-    });
-
-    const { data: userChats = [] } = useQuery({
-        queryKey: ["chats"],
-        queryFn: api.chats.getConversations,
-        staleTime: 30000,
     });
 
     const onlineMembers = (members || []).filter((m) => m.user?.is_online || m.user?.isOnline);
@@ -188,21 +175,11 @@ export const GroupDetails = () => {
     useEffect(() => {
         if (activeTab === "chat") {
             const timer = setTimeout(() => {
-                if (highlightMsgId) {
-                    const el = document.getElementById(`msg-${highlightMsgId}`);
-                    if (el) {
-                        el.scrollIntoView({ behavior: "smooth", block: "center" });
-                        setTimeout(() => setHighlightMsgId(null), 3000);
-                    } else {
-                        bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-                    }
-                } else {
-                    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-                }
+                bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
             }, 100);
             return () => clearTimeout(timer);
         }
-    }, [sortedMessages, activeTab, highlightMsgId]);
+    }, [sortedMessages, activeTab]);
 
     const deletePostMutation = useMutation({
         mutationFn: (postId) => api.posts.delete(postId),
@@ -386,27 +363,6 @@ export const GroupDetails = () => {
         }
     };
 
-    const handleNativeShare = async (msg) => {
-        const shareUrl = msg.imageUrl || msg.videoUrl || msg.fileUrl || `${window.location.origin}/groups/${id}#msg-${msg.id}`;
-        const text = msg.content ? `From ${group?.name}:\n${msg.content}` : `Check out this content from ${group?.name}`;
-        try {
-            if (navigator.share) {
-                await navigator.share({
-                    title: `Message from ${group?.name}`,
-                    text,
-                    url: shareUrl,
-                });
-            } else {
-                await navigator.clipboard.writeText(`${text}\n${shareUrl}`);
-                toast("Link copied to clipboard", "success");
-            }
-        } catch (err) {
-            if (err.name !== "AbortError") {
-                toast("Unable to share", "error");
-            }
-        }
-    };
-
     const getDateLabel = (dateStr) => {
         if (!dateStr) return "";
         const date = new Date(dateStr);
@@ -573,12 +529,6 @@ export const GroupDetails = () => {
                                                                             <button onClick={() => { setReplyToMsg(msg); setActiveMessageMenu(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-white hover:bg-white/10 rounded-lg w-full text-left">
                                                                                 <Reply size={14} /> Reply
                                                                             </button>
-                                                                            <button onClick={() => { setMsgToForward(msg); setIsForwardModalOpen(true); setActiveMessageMenu(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-white hover:bg-white/10 rounded-lg w-full text-left">
-                                                                                <Share size={14} /> Forward
-                                                                            </button>
-                                                                            <button onClick={() => { handleNativeShare(msg); setActiveMessageMenu(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-white hover:bg-white/10 rounded-lg w-full text-left">
-                                                                                <Share2 size={14} /> Share
-                                                                            </button>
                                                                             {mine && (
                                                                                 <button onClick={() => { deletePostMutation.mutate(msg.id); setActiveMessageMenu(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-500/10 rounded-lg w-full text-left">
                                                                                     <Trash2 size={14} /> Delete
@@ -591,114 +541,13 @@ export const GroupDetails = () => {
                                                                 {!mine && <span className="text-[10px] font-bold text-primary/70 px-2">{msg.author?.fullName || msg.author?.username || "Member"}</span>}
 
                                                                 <div 
-                                                                     id={`msg-${msg.id}`}
                                                                      onContextMenu={(e) => {
                                                                          e.preventDefault();
                                                                          setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id);
                                                                      }}
-                                                                     className={`rounded-2xl px-3 py-2 shadow-md border cursor-pointer select-none transition-all duration-300 ${mine ? "bg-primary text-black border-primary/20 rounded-br-md active:scale-[0.99] hover:brightness-[0.98]" : "bg-[#111114] text-white border-white/10 rounded-bl-md active:scale-[0.99] hover:bg-[#151519]"} ${highlightMsgId === String(msg.id) ? "ring-2 ring-primary ring-offset-2 ring-offset-black animate-pulse" : ""}`}
+                                                                     className={`rounded-2xl px-3 py-2 shadow-md border cursor-pointer select-none transition-all duration-200 ${mine ? "bg-primary text-black border-primary/20 rounded-br-md active:scale-[0.99] hover:brightness-[0.98]" : "bg-[#111114] text-white border-white/10 rounded-bl-md active:scale-[0.99] hover:bg-[#151519]"}`}
                                                                  >
                                                                     {repliedMsg && (
-                                                                        <div className={`mb-2 p-2 rounded-xl border-l-2 text-xs ${mine ? "bg-black/10 border-black text-black/70" : "bg-black/30 border-primary text-white/70"}`}>
-                                                                            <span className={`font-bold block mb-1 ${mine ? "text-black" : "text-primary"}`}>{String(repliedMsg.author?.id) === String(currentUserId) ? "You" : repliedMsg.author?.fullName}</span>
-                                                                            {repliedMsg.isDeleted ? <em className={mine ? "text-black/50 italic" : "text-white/40 italic"}>This message was deleted</em> : repliedMsg.content || "Media"}
-                                                                        </div>
-                                                                    )}
-
-                                                                    {msg.isDeleted ? (
-                                                                        <p className={`italic text-sm px-1 flex items-center gap-2 ${mine ? "text-black/50" : "text-white/40"}`}><Trash2 size={14}/> This message was deleted</p>
-                                                                    ) : (
-                                                                        <>
-                                                                            {(() => {
-                                                                                const mediaUrl = msg.imageUrl || msg.mediaUrl;
-                                                                                if (!mediaUrl) return null;
-                                                                                
-                                                                                if (isImageUrl(mediaUrl)) {
-                                                                                    return (
-                                                                                        <img 
-                                                                                            src={mediaUrl} 
-                                                                                            className="max-h-64 rounded-xl mb-1 object-cover cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform" 
-                                                                                            alt="" 
-                                                                                            onClick={() => setSelectedMedia({ url: mediaUrl, type: 'image', name: msg.fileName || 'Image' })} 
-                                                                                        />
-                                                                                    );
-                                                                                } else if (isVideoUrl(mediaUrl) || msg.videoUrl) {
-                                                                                    const vUrl = msg.videoUrl || mediaUrl;
-                                                                                    return (
-                                                                                        <div className="relative group/video rounded-xl overflow-hidden mb-1">
-                                                                                            <MediaPlayer url={vUrl} maxHeight="256px" autoPlayOnVisible={false} />
-                                                                                            <button 
-                                                                                                onClick={() => setSelectedMedia({ url: vUrl, type: 'video', name: msg.fileName || 'Video' })}
-                                                                                                className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/video:opacity-100 transition-opacity z-10 cursor-pointer"
-                                                                                                title="View Fullscreen"
-                                                                                            >
-                                                                                                <Maximize2 size={14} />
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    );
-                                                                                } else {
-                                                                                    // It's a generic file attachment!
-                                                                                    return (
-                                                                                        <div className={`flex items-center gap-2 p-1.5 rounded-xl mb-1 ${mine ? "bg-black/10 text-black" : "bg-white/5 text-white"}`}>
-                                                                                            <button 
-                                                                                                onClick={(e) => {
-                                                                                                    e.preventDefault();
-                                                                                                    setSelectedMedia({ url: mediaUrl, type: 'file', name: msg.fileName || 'Attachment' });
-                                                                                                }}
-                                                                                                className="flex-1 flex items-center gap-2 p-1 text-left cursor-pointer hover:opacity-80 transition-all min-w-0"
-                                                                                            >
-                                                                                                <FileText size={20} className="shrink-0" />
-                                                                                                <span className="text-sm truncate">{msg.fileName || "Attachment"}</span>
-                                                                                            </button>
-                                                                                            <button 
-                                                                                                onClick={(e) => {
-                                                                                                    e.preventDefault();
-                                                                                                    fetch(mediaUrl)
-                                                                                                        .then(r => r.blob())
-                                                                                                        .then(blob => {
-                                                                                                            const url = window.URL.createObjectURL(blob);
-                                                                                                            const link = document.createElement('a');
-                                                                                                            link.href = url;
-                                                                                                            link.setAttribute('download', msg.fileName || 'download');
-                                                                                                            document.body.appendChild(link);
-                                                                                                            link.click();
-                                                                                                            link.parentNode.removeChild(link);
-                                                                                                            window.URL.revokeObjectURL(url);
-                                                                                                        })
-                                                                                                        .catch(() => {
-                                                                                                            window.open(mediaUrl, '_blank');
-                                                                                                        });
-                                                                                                }}
-                                                                                                className={`p-2 rounded-lg hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer ${mine ? "hover:bg-black/10 text-black" : "hover:bg-white/10 text-white"}`}
-                                                                                                title="Download File"
-                                                                                            >
-                                                                                                <Download size={16} />
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    );
-                                                                                }
-                                                                            })()}
-                                                                            {msg.videoUrl && !msg.imageUrl && !msg.mediaUrl && (
-                                                                                <div className="relative group/video rounded-xl overflow-hidden mb-1">
-                                                                                    <MediaPlayer url={msg.videoUrl} maxHeight="256px" autoPlayOnVisible={false} />
-                                                                                    <button 
-                                                                                        onClick={() => setSelectedMedia({ url: msg.videoUrl, type: 'video', name: msg.fileName || 'Video' })}
-                                                                                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/video:opacity-100 transition-opacity z-10 cursor-pointer"
-                                                                                        title="View Fullscreen"
-                                                                                    >
-                                                                                        <Maximize2 size={14} />
-                                                                                    </button>
-                                                                                </div>
-                                                                            )}
-                                                                            {msg.audioUrl && (
-                                                                                <AudioPlayer 
-                                                                                    src={msg.audioUrl} 
-                                                                                    mine={mine} 
-                                                                                    senderAvatar={msg.author?.avatarUrl} 
-                                                                                    senderName={msg.author?.fullName || msg.author?.username} 
-                                                                                />
-                                                                            )}
-                                                                            {msg.stickerUrl && <img src={msg.stickerUrl} className="h-24 w-24 object-contain" alt="Sticker" />}
                                                                             {(msg.content || msg.caption) && <p className={`px-1 pt-1 text-[14px] leading-relaxed whitespace-pre-wrap ${mine ? "text-black" : "text-white"}`}>{msg.content || msg.caption}</p>}
                                                                         </>
                                                                     )}
@@ -708,101 +557,7 @@ export const GroupDetails = () => {
                                                                     {mine && !msg.isDeleted && <CheckCheck size={12} className="text-blue-500" />}
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    </motion.div>
-                                                </React.Fragment>
-                                            );
-                                        })
-                                    )}
-                                    {typingMembersNames.length > 0 && (
-                                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-zinc-400 text-xs w-fit max-w-[280px] mb-2 ml-4 animate-in fade-in zoom-in duration-200">
-                                            <span>{typingMembersNames.length === 1 ? `${typingMembersNames[0]} is typing` : 'Several people are typing'}</span>
-                                            <span className="w-1 h-1 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.3s]"></span>
-                                            <span className="w-1 h-1 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.15s]"></span>
-                                            <span className="w-1 h-1 rounded-full bg-zinc-400 animate-bounce"></span>
-                                        </div>
-                                    )}
-                                    <div ref={bottomRef} />
-                                </div>
-                                )}
-                            </div>
-
-                            {/* Reply Indicator UI */}
-                            <AnimatePresence>
-                                {replyToMsg && (
-                                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="absolute bottom-20 left-0 w-full px-4 z-20">
-                                        <div className="bg-[#111114] border border-white/10 rounded-xl p-3 flex items-start justify-between shadow-2xl backdrop-blur-xl">
-                                            <div className="flex-1 min-w-0 pr-4">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <Reply size={14} className="text-primary" />
-                                                    <span className="text-xs font-bold text-primary">Replying to {String(replyToMsg.author?.id) === String(currentUserId) ? "yourself" : replyToMsg.author?.fullName}</span>
-                                                </div>
-                                                <p className="text-sm text-white/70 truncate">{replyToMsg.isDeleted ? "Deleted message" : replyToMsg.content || "Media"}</p>
-                                            </div>
-                                            <button onClick={() => setReplyToMsg(null)} className="p-1 rounded-full bg-white/10 hover:bg-white/20 text-white shrink-0"><X size={16} /></button>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            {/* Chat Input Footer */}
-                            {group?.adminsOnlyChat && !isGroupAdmin ? (
-                                <footer className="bg-[#0a0a0c]/95 border-t border-white/5 p-4 text-center shrink-0 z-30 relative">
-                                    <p className="text-xs text-white/60 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                                        <Lock size={14} className="text-accent" /> Only admins can send messages in this group
-                                    </p>
-                                </footer>
-                            ) : isMember ? (
-                                <footer className="bg-[#0a0a0c]/95 border-t border-white/5 px-2 py-2 shrink-0 z-30 relative flex flex-col gap-2">
-                                    {attachmentPreview && (
-                                        <div className="mx-2 mb-2 w-fit relative">
-                                            {attachment?.type?.startsWith("video/") ? <video src={attachmentPreview} className="h-28 rounded-lg border border-white/10" /> : <img src={attachmentPreview} className="h-28 rounded-lg border border-white/10 object-cover" alt="" />}
-                                            <button onClick={clearAttachment} className="absolute -top-2 -right-2 h-7 w-7 bg-red-500 text-white rounded-full flex items-center justify-center"><X size={14} /></button>
-                                        </div>
-                                    )}
-                                    
-                                    <div className="flex items-end gap-1 sm:gap-2">
-                                        <div className="relative shrink-0 flex gap-1">
-                                            <button onClick={() => setIsAttachMenuOpen(!isAttachMenuOpen)} className="h-11 w-11 rounded-xl text-white/55 hover:text-white hover:bg-white/5 flex items-center justify-center">
-                                                <Plus size={22} className={`transition-transform ${isAttachMenuOpen ? "rotate-45" : ""}`} />
-                                            </button>
-                                            
-                                            <AnimatePresence>
-                                                {isAttachMenuOpen && (
-                                                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.96 }} className="absolute bottom-14 left-0 rounded-2xl border border-white/10 bg-[#111114] p-2 shadow-2xl flex gap-2">
-                                                        <button onClick={() => fileInputRef.current?.click()} className="h-11 w-11 rounded-xl text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"><ImageIcon size={20} /></button>
-                                                        <button onClick={() => { setIsAttachMenuOpen(false); setIsCameraModalOpen(true); }} className="h-11 w-11 rounded-xl text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"><Camera size={20} /></button>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </div>
-
-                                        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} accept="image/*,video/*" />
-
-                                        {isVoiceRecording ? (
-                                            <VoiceRecorder onSend={(blob) => { setIsVoiceRecording(false); handleSendVoiceNote(blob); }} onCancel={() => setIsVoiceRecording(false)} />
-                                        ) : (
-                                            <div className="flex-1 flex items-center bg-[#111114] border border-white/10 rounded-2xl relative">
-                                                <button 
-                                                    onClick={() => {
-                                                        if (isEmojiPickerOpen) {
-                                                            setIsEmojiPickerOpen(false);
-                                                            inputRef.current?.focus();
-                                                        } else {
-                                                            setIsEmojiPickerOpen(true);
-                                                        }
-                                                    }} 
-                                                    className="h-11 w-11 rounded-xl text-white/55 hover:text-white flex items-center justify-center transition-colors shrink-0"
-                                                >
-                                                    {isEmojiPickerOpen ? (
-                                                        <Keyboard size={22} className="text-primary animate-in zoom-in duration-200" />
-                                                    ) : (
-                                                        <Smile size={22} className="animate-in zoom-in duration-200" />
-                                                    )}
-                                                </button>
-
-                                                <textarea 
-                                                    ref={inputRef}
+<div>Content</div>
                                                     value={messageText} 
                                                     onChange={(e) => {
                                                         const val = e.target.value;
@@ -850,9 +605,7 @@ export const GroupDetails = () => {
                                         </div>
                                     )}
                                 </footer>
-                            ) : null}
-                        </motion.div>
-                    )}
+                            )}
 
                     {activeTab === "members" && (
                         <motion.div key="members" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 overflow-y-auto p-4 space-y-4">
@@ -1062,58 +815,6 @@ export const GroupDetails = () => {
                             <h2 className="text-xl font-serif text-white mb-4">Join Private Group</h2>
                             <textarea value={joinMessage} onChange={(e) => setJoinMessage(e.target.value)} placeholder="Why do you want to join this group? (Optional)" rows={3} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-6 resize-none focus:outline-none focus:border-primary/30" />
                             <button onClick={() => { joinMutation.mutate({ message: joinMessage }); setIsJoinModalOpen(false); }} className="w-full py-3 bg-white text-black rounded-xl font-bold uppercase tracking-widest text-xs">Submit Request</button>
-                        </motion.div>
-                    </div>
-                )}
-
-                {/* Forward Modal */}
-                {isForwardModalOpen && msgToForward && (
-                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setIsForwardModalOpen(false); setMsgToForward(null); }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-sm bg-[#111114] border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh]">
-                            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
-                                <h3 className="font-bold text-white uppercase tracking-widest text-sm">Forward Message</h3>
-                                <button onClick={() => { setIsForwardModalOpen(false); setMsgToForward(null); }} className="p-1 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-colors">
-                                    <X size={18} />
-                                </button>
-                            </div>
-                            <div className="p-3 border-b border-white/10 relative">
-                                <Search size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/40" />
-                                <input 
-                                    type="text" 
-                                    placeholder="Search chats..." 
-                                    value={searchForwardTerm}
-                                    onChange={(e) => setSearchForwardTerm(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white text-sm outline-none focus:border-primary transition-colors"
-                                />
-                            </div>
-                            <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
-                                {userChats.filter(chat => 
-                                    chat.partner?.fullName?.toLowerCase().includes(searchForwardTerm.toLowerCase()) || 
-                                    chat.partner?.username?.toLowerCase().includes(searchForwardTerm.toLowerCase())
-                                ).map(chat => (
-                                    <button 
-                                        key={chat.id}
-                                        onClick={() => {
-                                            const mediaStr = [msgToForward.imageUrl, msgToForward.videoUrl, msgToForward.fileUrl].filter(Boolean).join('\n');
-                                            const fwdContent = `Forwarded from ${msgToForward.author?.fullName || msgToForward.author?.username}:\n\n${msgToForward.content || ''}${mediaStr ? '\n' + mediaStr : ''}`;
-                                            api.chats.sendMessage(chat.id, { content: fwdContent });
-                                            setIsForwardModalOpen(false);
-                                            setMsgToForward(null);
-                                            toast("Message forwarded", "success");
-                                        }}
-                                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left"
-                                    >
-                                        <Avatar src={chat.partner?.avatarUrl} className="w-10 h-10 rounded-full" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-white font-bold text-sm truncate">{chat.partner?.fullName || chat.partner?.username}</p>
-                                        </div>
-                                    </button>
-                                ))}
-                                {userChats.length === 0 && (
-                                    <p className="text-center text-white/40 text-sm py-4">No recent chats to forward to.</p>
-                                )}
-                            </div>
                         </motion.div>
                     </div>
                 )}

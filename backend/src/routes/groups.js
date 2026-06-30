@@ -169,6 +169,16 @@ groupsRouter.get(
   '/:id/posts/',
   requireAuth,
   asyncHandler(async (req, res) => {
+    const group = await Group.findOne({ id: req.params.id });
+    if (!group) throw notFound('Group not found.');
+    
+    if (group.privacy === 'private') {
+      const isMem = await member(group.id, req.user.id);
+      if (!isMem) {
+        throw forbidden('You must be a member to view messages in this private group.');
+      }
+    }
+
     const posts = await Post.find({ group_id: req.params.id, is_taken_down: { $ne: true } }).sort({ created_at: -1 });
     res.json(await Promise.all(posts.map((post) => serializePost(post, req.user.id))));
   }),

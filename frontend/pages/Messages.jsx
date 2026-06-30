@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Camera, Check, CheckCheck, Image as ImageIcon, FileText, MessageSquarePlus, MoreVertical, Paperclip, Plus, Search, Send, UserPlus, X, Mic, Smile, Trash2, Reply, Share, Keyboard, Maximize2, Download } from "lucide-react";
+import { ArrowLeft, Camera, Check, CheckCheck, Image as ImageIcon, FileText, MessageSquarePlus, MoreVertical, Paperclip, Plus, Search, Send, UserPlus, X, Mic, Smile, Trash2, Reply, Share, Share2, Keyboard, Maximize2, Download, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api, getApiErrorMessage } from "../services/api";
 import { authStorage } from "../utils/persistentStorage";
@@ -50,9 +50,13 @@ export const Messages = () => {
     const [activeMessageMenu, setActiveMessageMenu] = useState(null);
     const [replyToMsg, setReplyToMsg] = useState(null);
     const [selectedMedia, setSelectedMedia] = useState(null);
-    const [highlightedMsgId, setHighlightedMsgId] = useState(null);
+    const [highlightedMsgId, setHighlightedMsgId] = useState(() => {
+        const hash = window.location.hash;
+        return hash.startsWith('#msg-') ? hash.replace('#msg-', '') : null;
+    });
     const [msgToForward, setMsgToForward] = useState(null);
     const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
+    const [searchForwardTerm, setSearchForwardTerm] = useState("");
 
     const { data: chats = [], isLoading: chatsLoading, isError: chatsError, error: chatsLoadError } = useQuery({
         queryKey: ["chats"],
@@ -169,10 +173,20 @@ export const Messages = () => {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+            if (highlightedMsgId) {
+                const el = document.getElementById(`msg-${highlightedMsgId}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: "smooth", block: "center" });
+                    setTimeout(() => setHighlightedMsgId(null), 3000);
+                } else {
+                    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+                }
+            } else {
+                bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+            }
         }, 100);
         return () => clearTimeout(timer);
-    }, [messages, selectedChatId]);
+    }, [messages, selectedChatId, highlightedMsgId]);
 
     useEffect(() => {
         if (!selectedChatId || selectedChatId.startsWith("temp-")) return;
@@ -216,6 +230,29 @@ export const Messages = () => {
         const username = normalizeContactToken(person.username);
         const fullName = normalizeContactToken(person.fullName);
         return Boolean((email && contactEmails.has(email)) || (username && contactNames.has(username)) || (fullName && contactNames.has(fullName)));
+    };
+
+    const handleShare = async (msg, mine) => {
+        const shareUrl = msg.imageUrl || msg.videoUrl || msg.fileUrl || `${window.location.origin}/messages?userId=${mine ? activeChat?.partner?.id : msg.senderId}#msg-${msg.id}`;
+        const senderName = String(msg.senderId) === String(currentUserId) ? "You" : (activeChat?.partner?.fullName || "Someone");
+        const text = msg.content ? `Message from ${senderName}:\n${msg.content}` : `Check out this content from ${senderName}`;
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: `Message from ${senderName}`,
+                    text,
+                    url: shareUrl,
+                });
+            } else {
+                await navigator.clipboard.writeText(`${text}\n${shareUrl}`);
+                toast("Link copied to clipboard", "success");
+            }
+            setActiveMessageMenu(null);
+        } catch (err) {
+            if (err.name !== "AbortError") {
+                toast("Unable to share", "error");
+            }
+        }
     };
 
     const clearAttachment = () => {
@@ -566,6 +603,7 @@ export const Messages = () => {
                                                                 </div>
 
                                                                 <div 
+                                                                    id={`msg-${msg.id}`}
                                                                     onContextMenu={(e) => {
                                                                         e.preventDefault();
                                                                         setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id);
@@ -615,12 +653,30 @@ export const Messages = () => {
                                                                                         <FileText size={20} className="shrink-0" />
                                                                                         <span className="text-sm truncate">{msg.fileName || "Attachment"}</span>
                                                                                     </button>
-                                                                                    <a href={msg.fileUrl} download={msg.fileName || 'download'} target="_blank" rel="noopener noreferrer"
+                                                                                    <button 
+                                                                                        onClick={(e) => {
+                                                                                            e.preventDefault();
+                                                                                            fetch(msg.fileUrl)
+                                                                                                .then(r => r.blob())
+                                                                                                .then(blob => {
+                                                                                                    const url = window.URL.createObjectURL(blob);
+                                                                                                    const link = document.createElement('a');
+                                                                                                    link.href = url;
+                                                                                                    link.setAttribute('download', msg.fileName || 'download');
+                                                                                                    document.body.appendChild(link);
+                                                                                                    link.click();
+                                                                                                    link.parentNode.removeChild(link);
+                                                                                                    window.URL.revokeObjectURL(url);
+                                                                                                })
+                                                                                                .catch(() => {
+                                                                                                    window.open(msg.fileUrl, '_blank');
+                                                                                                });
+                                                                                        }}
                                                                                         className={`p-2 rounded-lg hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer ${mine ? "hover:bg-black/10 text-black" : "hover:bg-white/10 text-white"}`}
                                                                                         title="Download File"
                                                                                     >
                                                                                         <Download size={18} />
-                                                                                    </a>
+                                                                                    </button>
                                                                                 </div>
                                                                             )}
                                                                             {msg.audioUrl && (
@@ -859,8 +915,21 @@ export const Messages = () => {
                                     <X size={18} />
                                 </button>
                             </div>
+                            <div className="p-3 border-b border-white/10 relative">
+                                <Search size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/40" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search chats..." 
+                                    value={searchForwardTerm}
+                                    onChange={(e) => setSearchForwardTerm(e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white text-sm outline-none focus:border-primary transition-colors"
+                                />
+                            </div>
                             <div className="flex-1 overflow-y-auto p-2 space-y-1 hide-scrollbar">
-                                {chats.map(chat => (
+                                {chats.filter(chat => 
+                                    chat.partner?.fullName?.toLowerCase().includes(searchForwardTerm.toLowerCase()) || 
+                                    chat.partner?.username?.toLowerCase().includes(searchForwardTerm.toLowerCase())
+                                ).map(chat => (
                                     <button 
                                         key={chat.id} 
                                         onClick={() => {

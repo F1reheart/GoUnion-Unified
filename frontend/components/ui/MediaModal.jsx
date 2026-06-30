@@ -117,7 +117,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                                 />
                             ) : isOfficeDoc ? (
                                 <iframe 
-                                    src={`https://docs.google.com/gview?url=${encodeURIComponent(mediaUrl)}&embedded=true`}
+                                    src={mediaUrl}
                                     className="w-full h-full bg-white" 
                                     title={fileName}
                                 />

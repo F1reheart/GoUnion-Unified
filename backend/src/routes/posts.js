@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Comment, Post } from '../models.js';
+import { Comment, Post, Group, GroupMember } from '../models.js';
 import { addNotification, serializeComment, serializePost } from '../store.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -34,6 +34,18 @@ postsRouter.post(
   asyncHandler(async (req, res) => {
     const { caption = '', image = null, video = null, group_id = null } = req.body;
     if (!caption && !image && !video) throw new HttpError(400, 'caption, image or video is required.');
+    
+    if (group_id) {
+      const group = await Group.findOne({ id: group_id });
+      if (group && group.admins_only_chat) {
+        const membership = await GroupMember.findOne({ group_id: group.id, user_id: req.user.id });
+        const isManager = ['admin', 'moderator'].includes(req.user.role) || (membership && ['admin', 'moderator'].includes(membership.role));
+        if (!isManager) {
+          throw forbidden('Only admins can send messages in this group.');
+        }
+      }
+    }
+
     const post = await Post.create({ user_id: req.user.id, group_id: group_id ? String(group_id) : null, caption, image, video, likes: [] });
     await notifyMentions({ text: caption, senderId: req.user.id, postId: post.id });
     const serializedPost = await serializePost(post, req.user.id);

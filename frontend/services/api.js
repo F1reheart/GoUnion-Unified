@@ -310,12 +310,7 @@ const normalizeReport = (report) => ({
     postId: report.post_id ?? report.postId,
     commentId: report.comment_id ?? report.commentId,
     user: report.user ? transformUser(report.user) : report.user,
-    post: report.post
-        ? {
-            ...report.post,
-            content: report.post.caption || report.post.content || '',
-        }
-        : report.post,
+    post: report.post ? transformPost(report.post) : report.post,
 });
 const uploadFile = async (file) => {
     if (!file)

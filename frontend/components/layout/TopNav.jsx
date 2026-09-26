@@ -13,7 +13,7 @@ export const TopNav = () => {
     const { user } = useAuthStore();
     const { toggleSidebar } = useUIStore();
     const [showNotifications, setShowNotifications] = useState(false);
-    // Search state
+    
     const [searchQuery, setSearchQuery] = useState("");
     const [showSearchResults, setShowSearchResults] = useState(false);
     const searchRef = useRef(null);

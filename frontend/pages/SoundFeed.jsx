@@ -64,7 +64,7 @@ export const SoundFeed = () => {
         elements.forEach((video) => playObserver.observe(video));
         return () => playObserver.disconnect();
     }, [data]);
-    // Filter reels by sound name (either from caption 🎵 Sound: or Original sound)
+    
     const allReels = Array.from(new Map((data?.pages.flat() || []).map((post) => [post.id, post])).values()).filter((post) => post.isReel || post.mediaType === "video" || isVideoUrl(post.imageUrl));
     const soundReels = allReels.filter((post) => {
         const content = post.content || "";

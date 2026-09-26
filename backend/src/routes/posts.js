@@ -60,7 +60,7 @@ postsRouter.post(
           });
         }
       } catch (e) {
-        // ignore
+        
       }
     }
     
@@ -134,7 +134,7 @@ postsRouter.post(
   '/:id/view',
   requireAuth,
   asyncHandler(async (req, res) => {
-    // Frontend hits this to track views, returning 200 OK
+    
     res.json({ status: 'ok' });
   }),
 );

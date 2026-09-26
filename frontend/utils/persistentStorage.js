@@ -15,7 +15,7 @@ const safeSet = (storage, key, value) => {
         storage.setItem(key, value);
     }
     catch {
-        // Ignore write failures in restricted contexts.
+        
     }
 };
 const safeRemove = (storage, key) => {
@@ -23,7 +23,7 @@ const safeRemove = (storage, key) => {
         storage.removeItem(key);
     }
     catch {
-        // Ignore remove failures in restricted contexts.
+        
     }
 };
 export const authStorage = {

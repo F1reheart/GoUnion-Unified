@@ -40,7 +40,7 @@ const queryClient = new QueryClient({
         },
     },
 });
-// Layout Component to wrap authenticated routes
+
 const AppLayout = ({ children }) => {
     const location = useLocation();
     const isGoto = location.pathname === '/goto';
@@ -229,12 +229,12 @@ const useNotificationPopups = () => {
     const seenIds = useRef(new Set());
     const initialized = useRef(false);
     const permissionAsked = useRef(false);
-    // Request notification permission and subscribe to Push Manager
+    
     useEffect(() => {
         const subscribeToPush = async () => {
             if ('serviceWorker' in navigator && 'PushManager' in window) {
                 try {
-                    // Use the already-registered SW from VitePWA instead of re-registering
+                    
                     const registration = await navigator.serviceWorker.ready;
                     const permission = await Notification.requestPermission();
                     if (permission === 'granted') {
@@ -283,7 +283,7 @@ const useNotificationPopups = () => {
                     icon: '/pwa-192x192.png',
                     badge: '/pwa-192x192.png',
                     tag: `gounion-${Date.now()}`,
-                    // Some DOM lib versions omit the Notification vibration option.
+                    
                     ...{ vibrate: [200, 100, 200] },
                 });
                 n.onclick = () => {
@@ -292,7 +292,7 @@ const useNotificationPopups = () => {
                 };
             }
             catch {
-                // Silent fail on environments that don't support Notification constructor
+                
             }
         }
     };
@@ -371,7 +371,7 @@ const AppRoutes = () => {
     const { setInstalled } = usePwaStore();
     const { toast } = useToast();
     useEffect(() => {
-        // Check if already installed via display-mode
+        
         if (window.matchMedia('(display-mode: standalone)').matches) {
             setInstalled(true);
         }
@@ -472,7 +472,7 @@ const AppRoutes = () => {
                     if (videos[i] !== activeElement) {
                         try {
                             videos[i].pause();
-                        } catch (err) { /* ignore */ }
+                        } catch (err) {  }
                     }
                 }
                 const audios = document.getElementsByTagName('audio');
@@ -480,7 +480,7 @@ const AppRoutes = () => {
                     if (audios[i] !== activeElement) {
                         try {
                             audios[i].pause();
-                        } catch (err) { /* ignore */ }
+                        } catch (err) {  }
                     }
                 }
             }
@@ -524,7 +524,7 @@ const AppRoutes = () => {
         return _jsx(Navigate, { to: (isPwa || isReturningUser) ? "/login" : "/download", replace: true });
     }
     
-    // If they try to view the download page but already have the app installed or have visited before
+    
     if (!isAuthenticated && currentPath === "/download" && (isPwa || isReturningUser)) {
         return _jsx(Navigate, { to: "/login", replace: true });
     }

@@ -11,7 +11,7 @@ export const Login = () => {
     const [loading, setLoading] = useState(false);
     const [isWakingUp, setIsWakingUp] = useState(false);
 
-    // Wake the Render free-tier server as soon as the login page loads
+    
     useEffect(() => {
         keepAlive();
         const handler = (e) => setIsWakingUp(e.detail.isWaking);

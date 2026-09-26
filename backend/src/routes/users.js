@@ -34,7 +34,7 @@ usersRouter.post(
     user.profile.user_id = user.id;
     await user.save();
 
-    // Issue OTP for email verification
+    
     await OtpToken.deleteMany({ user_id: user.id, used_at: null });
     const otp = generateOtp();
     await OtpToken.create({
@@ -60,7 +60,7 @@ usersRouter.put(
   '/me/profile',
   requireAuth,
   asyncHandler(async (req, res) => {
-    // If username is provided, validate uniqueness and update it
+    
     if (req.body.username !== undefined && req.body.username !== req.user.username) {
       const trimmedUsername = req.body.username.trim();
       if (!trimmedUsername) {

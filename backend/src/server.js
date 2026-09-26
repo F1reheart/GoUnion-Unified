@@ -8,9 +8,9 @@ import { initSocket } from './socket.js';
 
 connectDatabase()
   .then(async () => {
-    // Force-sync all Mongoose indexes to Cosmos DB (MongoDB API).
-    // Cosmos DB requires explicit indexes for sort operations; without this,
-    // queries with .sort() will return 400 BadRequest.
+    
+    
+    
     try {
       await mongoose.connection.syncIndexes();
       console.log('All database indexes synced successfully.');

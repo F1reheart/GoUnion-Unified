@@ -28,10 +28,10 @@ export const initSocket = (server) => {
     const markOffline = async (userId) => {
       if (!userId) return;
       
-      // Check if user still has other active connections
+      
       const userRoom = io.sockets.adapter.rooms.get(`user:${userId}`);
       if (userRoom && userRoom.size > 0) {
-        // Still active in other sockets/tabs
+        
         return;
       }
       
@@ -50,7 +50,7 @@ export const initSocket = (server) => {
         const userId = data && data.userId;
         void markOnline(userId);
       } catch (e) {
-        // ignore
+        
       }
     });
 
@@ -58,7 +58,7 @@ export const initSocket = (server) => {
       try {
         void markOnline(data && (data.userId || data.user_id));
       } catch (e) {
-        // ignore
+        
       }
     });
 
@@ -66,7 +66,7 @@ export const initSocket = (server) => {
       try {
         void markOffline((data && (data.userId || data.user_id)) || authedUserId);
       } catch (e) {
-        // ignore
+        
       }
     });
 

@@ -15,7 +15,7 @@ import { createOpaqueToken, hashOpaqueToken } from '../services/tokens.js';
 const form = multer();
 export const authRouter = Router();
 
-// ── helpers ────────────────────────────────────────────────────────────────
+
 
 const issueTokens = async (user) => {
   const access_token = signAccessToken(user);
@@ -27,7 +27,7 @@ const issueTokens = async (user) => {
 const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 const hashOtp = (otp) => crypto.createHash('sha256').update(otp).digest('hex');
 
-/** Creates a fresh OTP, stores it, and emails it to the user. */
+
 const issueOtp = async (user) => {
   await OtpToken.deleteMany({ user_id: user.id, used_at: null });
   const otp = generateOtp();
@@ -39,7 +39,7 @@ const issueOtp = async (user) => {
   await sendOtpEmail(user, otp);
 };
 
-// ── routes ─────────────────────────────────────────────────────────────────
+
 
 authRouter.post(
   '/token',
@@ -118,11 +118,7 @@ authRouter.post(
   }),
 );
 
-/**
- * POST /auth/verify-otp
- * Body: { email, otp }
- * Verifies the 6-digit OTP and marks the user's email as confirmed.
- */
+
 authRouter.post(
   '/verify-otp',
   asyncHandler(async (req, res) => {
@@ -155,11 +151,7 @@ authRouter.post(
   }),
 );
 
-/**
- * POST /auth/resend-otp
- * Body: { email }
- * Sends a fresh OTP to the given (unverified) email address.
- */
+
 authRouter.post(
   '/resend-otp',
   asyncHandler(async (req, res) => {
@@ -176,8 +168,8 @@ authRouter.post(
   }),
 );
 
-// Keep the old confirm-email route for backwards-compatibility with any
-// magic-link emails that were sent before this migration.
+
+
 authRouter.post(
   '/confirm-email',
   asyncHandler(async (req, res) => {

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2'; // Force SW update
+const CACHE_VERSION = 'v2'; 
 
 self.addEventListener("push", (event) => {
   if (event.data) {

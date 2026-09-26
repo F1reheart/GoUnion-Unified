@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, Maximize2, Minimize2, X } from "lucide-react";
-// ─── Helpers ──────────────────────────────────────────────
+
 const VIDEO_EXTENSIONS = ["mp4", "webm", "ogg", "mov", "mkv", "avi", "m4v"];
 export function isVideoUrl(url) {
     if (!url)
@@ -32,7 +32,7 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
     const progressRef = useRef(null);
     const hideTimer = useRef(null);
     const [playing, setPlaying] = useState(false);
-    const [muted, setMuted] = useState(false); // start unmuted for UX
+    const [muted, setMuted] = useState(false); 
     const [volume, setVolume] = useState(1);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -46,7 +46,7 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
     const tapTimer = useRef(null);
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
     const bufferedPct = duration > 0 ? (buffered / duration) * 100 : 0;
-    // ── Play / Pause ─────────────────────────────────────────
+    
     const togglePlay = useCallback(() => {
         const v = videoRef.current;
         if (!v)
@@ -59,7 +59,7 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
             setPlaying(false);
         }
     }, []);
-    // ── Mute ─────────────────────────────────────────────────
+    
     const toggleMute = useCallback((e) => {
         e.stopPropagation();
         const v = videoRef.current;
@@ -68,7 +68,7 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
         v.muted = !v.muted;
         setMuted(v.muted);
     }, []);
-    // ── Progress ─────────────────────────────────────────────
+    
     const onPointerDown = (e) => {
         e.currentTarget.setPointerCapture(e.pointerId);
         setIsDragging(true);
@@ -101,7 +101,7 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
         e.currentTarget.releasePointerCapture(e.pointerId);
         setIsDragging(false);
     };
-    // ── Volume ────────────────────────────────────────────────
+    
     const onVolumeChange = (e) => {
         const v = videoRef.current;
         if (!v)
@@ -112,7 +112,7 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
         setVolume(val);
         setMuted(val === 0);
     };
-    // ── Fullscreen ────────────────────────────────────────────
+    
     const toggleFullscreen = (e) => {
         e.stopPropagation();
         const el = containerRef.current;
@@ -132,7 +132,7 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
         document.addEventListener("fullscreenchange", h);
         return () => document.removeEventListener("fullscreenchange", h);
     }, []);
-    // ── Autoplay on Visible ───────────────────────────────────
+    
     useEffect(() => {
         if (!autoPlayOnVisible || !containerRef.current)
             return;
@@ -151,7 +151,7 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
         observer.observe(containerRef.current);
         return () => observer.disconnect();
     }, [autoPlayOnVisible]);
-    // ── Auto-hide controls ────────────────────────────────────
+    
     useEffect(() => {
         if (!playing || isDragging) {
             setShowControls(true);
@@ -159,7 +159,7 @@ export const VideoPlayer = ({ src, onLoadedData, autoPlayOnVisible, objectCover,
             setShowControls(false);
         }
     }, [playing, isDragging]);
-    // ── Tap icon flash (TikTok style) ─────────────────────────
+    
     const flashTapIcon = (icon) => {
         setTapIcon(icon);
         if (tapTimer.current)

@@ -125,10 +125,10 @@ export const addNotification = async ({ user_id, sender_id, type, post_id = null
       io.to(`user:${user_id}`).emit('notification', { type: 'new_notification', notification: payload });
     }
   } catch (e) {
-    // ignore socket failures
+    
   }
 
-  // Send Web Push Notification
+  
   try {
     const subscriptions = await PushSubscription.find({ user_id });
     if (subscriptions.length > 0) {
@@ -174,7 +174,7 @@ export const addNotification = async ({ user_id, sender_id, type, post_id = null
       }
     }
   } catch (pushErr) {
-    // ignore push failures
+    
   }
 
   return doc;

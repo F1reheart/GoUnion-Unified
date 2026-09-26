@@ -4,11 +4,11 @@ import ReactDOM from 'react-dom/client';
 import './global.css';
 import App from './App';
 import { usePwaStore } from './store/pwaStore';
-// Connect to the inline script in index.html that caught the event
+
 if (window.deferredPWAInstallPrompt) {
     usePwaStore.getState().setInstallPrompt(window.deferredPWAInstallPrompt);
 }
-// Allow the inline script to push events to the store if they fire late
+
 window.updatePwaStorePrompt = (e) => {
     usePwaStore.getState().setInstallPrompt(e);
 };

@@ -36,13 +36,13 @@ export const StatusCircles = () => {
     }, {});
     const myStories = user?.id ? groupedStories[String(user.id)]?.stories || [] : [];
     const otherStories = Object.values(groupedStories).filter((group) => {
-        // Only show people who have stories.
-        // Fade them if every story has been viewed; otherwise show normally.
+        
+        
         if (String(group.user.id) === String(user?.id))
             return false;
         if (!group.user.isFollowing)
             return false;
-        // Must be a mutual follower (they follow me, and I follow them)
+        
         const isMutual = myFollowers.some((f) => String(f.id) === String(group.user.id));
         if (!isMutual)
             return false;

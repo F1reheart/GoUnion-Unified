@@ -12,7 +12,7 @@ export const ConfirmEmail = () => {
   const navigate = useNavigate();
 
   const [digits, setDigits] = useState(Array(OTP_LENGTH).fill(""));
-  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+  const [status, setStatus] = useState("idle"); 
   const [errorMsg, setErrorMsg] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
   const inputRefs = useRef([]);
@@ -139,7 +139,7 @@ export const ConfirmEmail = () => {
         className="w-full max-w-md"
       >
         <div className="relative rounded-[2.5rem] border border-white/10 bg-[#111115]/90 px-8 py-10 shadow-2xl backdrop-blur-2xl overflow-hidden">
-          {/* top accent line */}
+          {}
           <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-primary via-accent to-primary opacity-60" />
 
           <AnimatePresence mode="wait">
@@ -168,7 +168,7 @@ export const ConfirmEmail = () => {
               </motion.div>
             ) : (
               <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                {/* Header */}
+                {}
                 <div className="text-center mb-8">
                   <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
                     <span className="font-serif font-black text-3xl text-white">G</span>
@@ -187,7 +187,7 @@ export const ConfirmEmail = () => {
                   </p>
                 </div>
 
-                {/* OTP inputs */}
+                {}
                 <div className="flex justify-center gap-3 mb-6" onPaste={handlePaste}>
                   {digits.map((d, i) => (
                     <input
@@ -226,7 +226,7 @@ export const ConfirmEmail = () => {
                   )}
                 </AnimatePresence>
 
-                {/* Verify button */}
+                {}
                 <button
                   onClick={handleVerify}
                   disabled={status === "loading" || digits.join("").length < OTP_LENGTH}
@@ -243,7 +243,7 @@ export const ConfirmEmail = () => {
                   )}
                 </button>
 
-                {/* Divider */}
+                {}
                 <div className="flex items-center gap-3 mb-4">
                   <div className="h-px flex-1 bg-white/5" />
                   <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">
@@ -252,7 +252,7 @@ export const ConfirmEmail = () => {
                   <div className="h-px flex-1 bg-white/5" />
                 </div>
 
-                {/* Resend */}
+                {}
                 <button
                   onClick={handleResend}
                   disabled={resendCooldown > 0}
@@ -262,7 +262,7 @@ export const ConfirmEmail = () => {
                   {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
                 </button>
 
-                {/* Back to login */}
+                {}
                 <div className="mt-6 text-center">
                   <Link
                     to="/login"

@@ -11,7 +11,7 @@ export const GlobalCreateModal = ({ isOpen, onClose, openCreateStatus, openCreat
                                         openCreateReel();
                                     }, className: "flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors text-left", children: [_jsx("div", { className: "w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center", children: _jsx(Video, { className: "text-accent", size: 24 }) }), _jsxs("div", { children: [_jsx("h3", { className: "text-white font-bold text-lg", children: "Goto Reel" }), _jsx("p", { className: "text-zinc-500 text-xs font-medium", children: "Post a short video to Goto" })] })] }), _jsxs("button", { onClick: () => {
                                         onClose();
-                                        // We can scroll to top of feed where CreatePost is, or trigger an event.
+                                        
                                         window.dispatchEvent(new Event("gounion-focus-create-post"));
                                     }, className: "flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors text-left", children: [_jsx("div", { className: "w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center", children: _jsx(ImageIcon, { className: "text-blue-500", size: 24 }) }), _jsxs("div", { children: [_jsx("h3", { className: "text-white font-bold text-lg", children: "Feed Post" }), _jsx("p", { className: "text-zinc-500 text-xs font-medium", children: "Share something with your followers" })] })] })] })] })] })) }));
 };

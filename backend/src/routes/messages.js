@@ -44,7 +44,7 @@ messagesRouter.delete(
         }
       }
     } catch (e) {
-      // ignore
+      
     }
 
     res.json({ status: 'ok', message: await serializeMessage(message) });

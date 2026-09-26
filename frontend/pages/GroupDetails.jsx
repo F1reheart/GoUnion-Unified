@@ -132,7 +132,7 @@ export const GroupDetails = () => {
                 queryClient.setQueryData(["group-posts", id], (old) => {
                     if (!old) return [transformPost(data.message)];
                     const transformed = transformPost(data.message);
-                    // Match by real ID or by temp optimistic ID
+                    
                     const existsIndex = old.findIndex(p => String(p.id) === String(transformed.id) || (String(p.id).startsWith('temp-') && p.content === transformed.content));
                     if (existsIndex !== -1) {
                         const newOld = [...old];
@@ -448,7 +448,7 @@ export const GroupDetails = () => {
 
     return (
         <div className="h-[100dvh] w-full bg-[#030303] text-white flex flex-col overflow-hidden">
-            {/* Header Area */}
+            {}
             <div className="relative shrink-0 border-b border-white/5">
                 <img src={group.imageUrl} alt={group.name} className="absolute inset-0 w-full h-full object-cover opacity-30" />
                 {isAdmin && (
@@ -497,7 +497,7 @@ export const GroupDetails = () => {
                 </div>
             </div>
 
-            {/* Navigation Tabs */}
+            {}
             <div className="flex gap-2 px-4 pb-2 overflow-x-auto scrollbar-none border-b border-white/5 shrink-0">
                 {["chat", "members", "about"].map((tab) => (
                     <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab ? "bg-white/10 text-white" : "text-white/40 hover:text-white/80"}`}>
@@ -506,7 +506,7 @@ export const GroupDetails = () => {
                 ))}
             </div>
 
-            {/* Content Area */}
+            {}
             <div className="flex-1 overflow-hidden relative">
                 <AnimatePresence mode="wait">
                     {activeTab === "chat" && (
@@ -575,7 +575,7 @@ export const GroupDetails = () => {
                                                             )}
                                                             <div className={`flex flex-col gap-1 ${mine ? "items-end" : "items-start"}`}>
                                                                 
-                                                                {/* Context Menu Icon */}
+                                                                {}
                                                                 <div className={`absolute top-2 ${mine ? "-left-10" : "-right-10"} opacity-40 group-hover:opacity-100 transition-opacity`}>
                                                                     <button onClick={(e) => { e.stopPropagation(); setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id); }} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white shadow">
                                                                         <MoreVertical size={14} />
@@ -649,7 +649,7 @@ export const GroupDetails = () => {
                                                                                         </div>
                                                                                     );
                                                                                 } else {
-                                                                                    // It's a generic file attachment!
+                                                                                    
                                                                                     return (
                                                                                         <div className={`flex items-center gap-2 p-1.5 rounded-xl mb-1 ${mine ? "bg-black/10 text-black" : "bg-white/5 text-white"}`}>
                                                                                             <button 
@@ -747,7 +747,7 @@ export const GroupDetails = () => {
                                 )}
                             </div>
 
-                            {/* Reply Indicator UI */}
+                            {}
                             <AnimatePresence>
                                 {replyToMsg && (
                                     <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="absolute bottom-20 left-0 w-full px-4 z-20">
@@ -765,7 +765,7 @@ export const GroupDetails = () => {
                                 )}
                             </AnimatePresence>
 
-                            {/* Chat Input Footer */}
+                            {}
                             {group?.adminsOnlyChat && !isGroupAdmin ? (
                                 <footer className="bg-[#0a0a0c]/95 border-t border-white/5 p-4 text-center shrink-0 z-30 relative">
                                     <p className="text-xs text-white/60 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
@@ -958,7 +958,7 @@ export const GroupDetails = () => {
 
                     {activeTab === "admin" && isAdmin && (
                         <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 overflow-y-auto p-4 space-y-6">
-                            {/* Group Info Settings (WhatsApp style) */}
+                            {}
                             <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 shadow-xl">
                                 <h3 className="text-white font-serif text-xl mb-1">Group Settings</h3>
                                 <p className="text-xs text-white/40 uppercase tracking-widest font-black mb-6">Manage group details and privacy</p>
@@ -1039,7 +1039,7 @@ export const GroupDetails = () => {
                                 </div>
                             </div>
 
-                            {/* Pending Requests */}
+                            {}
                             <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 shadow-xl">
                                 <h3 className="text-white font-serif text-xl mb-1">Pending Requests</h3>
                                 <p className="text-xs text-white/40 uppercase tracking-widest font-black mb-6">Review membership requests</p>
@@ -1073,7 +1073,7 @@ export const GroupDetails = () => {
                 </AnimatePresence>
             </div>
 
-            {/* Modals */}
+            {}
             <AnimatePresence>
                 {isJoinModalOpen && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -1086,7 +1086,7 @@ export const GroupDetails = () => {
                     </div>
                 )}
 
-                {/* Forward Modal */}
+                {}
                 {isForwardModalOpen && msgToForward && (
                     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setIsForwardModalOpen(false); setMsgToForward(null); }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />

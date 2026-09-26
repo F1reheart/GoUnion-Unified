@@ -9,7 +9,7 @@ export const VoiceRecorder = ({ onSend, onCancel }) => {
     const chunksRef = useRef([]);
     const timerRef = useRef(null);
     useEffect(() => {
-        // Start recording immediately when component mounts
+        
         startRecording();
         return () => {
             if (timerRef.current)
@@ -59,9 +59,9 @@ export const VoiceRecorder = ({ onSend, onCancel }) => {
             onSend(audioBlob);
         }
         else if (isRecording) {
-            // If still recording, stop and then send
+            
             stopRecording();
-            // Need a slight delay to allow onstop to fire and blob to be generated
+            
             setTimeout(() => {
                 const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
                 onSend(blob);

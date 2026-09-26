@@ -15,7 +15,7 @@ export const usePushNotifications = () => {
             try {
                 let permStatus = await PushNotifications.checkPermissions();
                 if (permStatus.receive !== "granted") {
-                    // Do not auto-prompt at startup; request from an explicit settings action.
+                    
                     console.warn("Push permission not granted yet; skipping registration.");
                     return;
                 }
@@ -23,8 +23,8 @@ export const usePushNotifications = () => {
                     return;
                 listenerHandles.push(await PushNotifications.addListener("registration", (token) => {
                     console.log("Push registration success, token:", token.value);
-                    // TODO: Send this token to your backend API to save it
-                    // Example: api.notifications.saveToken(token.value);
+                    
+                    
                 }));
                 listenerHandles.push(await PushNotifications.addListener("registrationError", (error) => {
                     console.error("Push registration error:", error);
@@ -38,7 +38,7 @@ export const usePushNotifications = () => {
                 await PushNotifications.register();
             }
             catch (error) {
-                // Prevent fatal startup crashes on devices with partial push setup.
+                
                 console.error("Push initialization failed:", error);
             }
         };

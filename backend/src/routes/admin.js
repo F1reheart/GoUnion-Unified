@@ -36,7 +36,7 @@ adminRouter.put(
     const user = await User.findOne({ id: req.params.id });
     if (!user) throw notFound('User not found.');
     
-    // Protect original admin
+    
     if (user.email === 'ezeilodavid292@gmail.com' && req.user.email !== 'ezeilodavid292@gmail.com') {
       throw forbidden('You cannot modify the original admin.');
     }
@@ -53,7 +53,7 @@ adminRouter.post(
     const user = await User.findOne({ id: req.params.id });
     if (!user) throw notFound('User not found.');
     
-    // Protect original admin
+    
     if (user.email === 'ezeilodavid292@gmail.com' && req.user.email !== 'ezeilodavid292@gmail.com') {
       throw forbidden('You cannot suspend the original admin.');
     }

@@ -53,7 +53,7 @@ export const StoryViewer = ({ isOpen, onClose, stories, currentUser, }) => {
     useEffect(() => {
         if (!isOpen || !stories.length)
             return;
-        // Record view for current story
+        
         const currentStory = stories[currentIndex];
         if (currentStory && currentStory.id) {
             viewMutation.mutate(currentStory.id);

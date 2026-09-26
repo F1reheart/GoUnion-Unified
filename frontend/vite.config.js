@@ -60,7 +60,7 @@ export default defineConfig(({ mode }) => {
                                 cacheName: 'ui-avatars',
                                 expiration: {
                                     maxEntries: 100,
-                                    maxAgeSeconds: 60 * 60 * 24 * 30 // 30 Days
+                                    maxAgeSeconds: 60 * 60 * 24 * 30 
                                 },
                                 cacheableResponse: {
                                     statuses: [0, 200]

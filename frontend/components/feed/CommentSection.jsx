@@ -25,7 +25,7 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
         onMutate: async (newCommentText) => {
             await queryClient.cancelQueries({ queryKey: ["comments", postId] });
             const previousComments = queryClient.getQueryData(["comments", postId]);
-            // Optimistically add new comment
+            
             queryClient.setQueryData(["comments", postId], (old) => {
                 const optimisticComment = {
                     id: Date.now(),
@@ -40,14 +40,14 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
                 };
                 return old ? [...old, optimisticComment] : [optimisticComment];
             });
-            // Optimistically increment comment count on the post
+            
             const updatePostCount = (p) => {
                 if (p.id === postId) {
                     return { ...p, comments: (p.comments || 0) + 1 };
                 }
                 return p;
             };
-            // Update Feed
+            
             queryClient.setQueryData(["feed"], (old) => {
                 if (!old)
                     return old;
@@ -56,7 +56,7 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
                     pages: old.pages.map((page) => page.map(updatePostCount)),
                 };
             });
-            // Update Group Posts
+            
             if (groupId) {
                 queryClient.setQueryData(["group-posts", groupId], (old) => {
                     if (!old)
@@ -64,7 +64,7 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
                     return old.map(updatePostCount);
                 });
             }
-            // Update Profile Posts
+            
             if (authorUsername) {
                 queryClient.setQueryData(["profile-posts", authorUsername], (old) => {
                     if (!old)
@@ -85,7 +85,7 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
             queryClient.setQueryData(["comments", postId], (old) => {
                 if (!old)
                     return [newComment];
-                // Remove the optimistic comment (which has a timestamp ID) and add the real one
+                
                 return [...old.filter(c => String(c.content) !== String(newComment.content)), newComment];
             });
             queryClient.invalidateQueries({ queryKey: ["feed"] });
@@ -148,7 +148,7 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
         setContent((current) => current.replace(/^@\S+\s*/, ""));
     };
     return (_jsxs("div", { className: "mt-4 flex h-full min-h-0 flex-col border-t border-white/5 pb-24 pt-4 md:pb-4", children: [_jsxs("div", { className: "flex-1 min-h-0 space-y-5 overflow-y-auto pb-4 pr-1", children: [isLoading ? (_jsx("div", { className: "flex min-h-32 items-center justify-center", children: _jsx("div", { className: "flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 font-serif text-3xl font-black text-white/25 animate-pulse", children: "G" }) })) : isError ? (_jsx("div", { className: "flex min-h-32 items-center justify-center px-4 text-center", children: _jsx("p", { className: "text-sm text-red-300", children: "Comments could not load. Check the backend comments endpoint." }) })) : ((() => {
-                        // Heuristic grouping: comments starting with @ are replies
+                        
                         const topLevel = [];
                         const replies = [];
                         comments?.forEach((c) => {
@@ -157,19 +157,19 @@ export const CommentSection = ({ postId, groupId, authorUsername, }) => {
                             else
                                 topLevel.push({ ...c, replies: [] });
                         });
-                        // Try to attach replies to the most recent top-level comment by that user
+                        
                         replies.forEach((r) => {
                             const mentionedMatch = r.content.match(/^@(\S+)/);
                             if (mentionedMatch) {
                                 const username = mentionedMatch[1];
-                                // Find last top level comment by this username
+                                
                                 const parentIdx = topLevel.map(t => t.user.username).lastIndexOf(username);
                                 if (parentIdx !== -1) {
                                     topLevel[parentIdx].replies.push(r);
                                     return;
                                 }
                             }
-                            // Fallback
+                            
                             if (topLevel.length > 0)
                                 topLevel[topLevel.length - 1].replies.push(r);
                                 else

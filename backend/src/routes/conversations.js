@@ -67,7 +67,7 @@ conversationsRouter.post(
     conversation.updated_at = new Date();
     await conversation.save();
     await Promise.all(conversation.participant_ids.filter((id) => id !== req.user.id).map((id) => addNotification({ user_id: id, sender_id: req.user.id, type: 'new_message' })));
-      // Emit socket event to participants
+      
       try {
         const io = getIo();
         if (io) {
@@ -79,7 +79,7 @@ conversationsRouter.post(
           });
         }
       } catch (e) {
-        // ignore
+        
       }
 
       res.status(201).json(await serializeMessage(message));
@@ -94,13 +94,13 @@ conversationsRouter.post(
     if (!conversation) throw notFound('Conversation not found.');
     if (!hasParticipant(conversation, req.user.id)) throw forbidden('You cannot read this conversation.');
 
-    // Mark all unread messages from other users in this conversation as read
+    
     await Message.updateMany(
       { conversation_id: conversation.id, sender_id: { $ne: req.user.id }, is_read: false },
       { is_read: true }
     );
 
-    // Notify other participants via Socket.io so they get blue ticks (read receipts)
+    
     try {
       const io = getIo();
       if (io) {
@@ -114,7 +114,7 @@ conversationsRouter.post(
         });
       }
     } catch (e) {
-      // ignore socket errors
+      
     }
 
     res.json({ status: 'success' });

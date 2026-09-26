@@ -1,38 +1,34 @@
-/// <reference types="vite/client" />
+
 import axios from 'axios';
 import { useAuthStore } from '../store';
 import { authStorage } from '../utils/persistentStorage';
 export const API_URL = import.meta.env.VITE_API_URL ||
     (import.meta.env.DEV ? `http://${window.location.hostname}:8001` : '/api');
-// Create Axios instance
-// 120 s default — enough for a Render free-tier cold start (~30-90 s)
+
+
 export const apiClient = axios.create({
     baseURL: API_URL,
     timeout: 120000,
 });
 
-/**
- * Ping the backend health endpoint so it wakes up before the user
- * tries to log in or sign up. Call this once when the app mounts.
- * Fires-and-forgets — never throws.
- */
+
 export const keepAlive = () => {
-    // Only ping in production; dev server is always awake
+    
     if (import.meta.env.DEV) return;
     const ping = () =>
         fetch(`${API_URL}/health`, { method: 'GET', signal: AbortSignal.timeout(10000) })
-            .catch(() => { /* ignore — server might still be sleeping */ });
-    // Ping immediately on load, then every 10 minutes to prevent sleep
+            .catch(() => {  });
+    
     ping();
     setInterval(ping, 10 * 60 * 1000);
 };
 
-/** Emit a custom event so any component can show "Server waking up..." UI */
+
 const emitWakeUp = (isWaking) =>
     window.dispatchEvent(new CustomEvent('gounion-server-waking', { detail: { isWaking } }));
 
 let refreshPromise = null;
-// Add interceptor to attach access token
+
 apiClient.interceptors.request.use((config) => {
     const token = authStorage.getItem('access_token');
     const url = config.url || '';
@@ -42,19 +38,19 @@ apiClient.interceptors.request.use((config) => {
     }
     return config;
 }, (error) => Promise.reject(error));
-// Add interceptor to handle unauthorized/suspended responses
+
 apiClient.interceptors.response.use((response) => {
-    // Clear any "waking up" banner on a successful response
+    
     emitWakeUp(false);
     return response;
 }, async (error) => {
-    // Detect cold-start timeout: retry once with extended timeout + user feedback
+    
     const isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout');
     const originalRequest = error.config;
     if (isTimeout && originalRequest && !originalRequest._coldStartRetry) {
         originalRequest._coldStartRetry = true;
         emitWakeUp(true);
-        // Give the server up to 90 more seconds to finish waking up
+        
         originalRequest.timeout = 90000;
         try {
             const result = await apiClient(originalRequest);
@@ -88,8 +84,8 @@ apiClient.interceptors.response.use((response) => {
                 return apiClient(originalRequest);
             }
             catch (refreshError) {
-                // Only logout if the refresh endpoint explicitly rejected (401/403)
-                // Don't logout on network errors - user might just be offline briefly
+                
+                
                 const refreshStatus = refreshError?.response?.status;
                 if (refreshStatus === 401 || refreshStatus === 403) {
                     useAuthStore.getState().logout();
@@ -100,7 +96,7 @@ apiClient.interceptors.response.use((response) => {
                 refreshPromise = null;
             }
         } else {
-            // No refresh token available, must logout
+            
             useAuthStore.getState().logout();
             return Promise.reject(error);
         }
@@ -111,7 +107,7 @@ apiClient.interceptors.response.use((response) => {
     }
     return Promise.reject(error);
 });
-// Helper to build full URLs for media
+
 const getFullUrl = (url) => {
     if (!url)
         return null;
@@ -167,7 +163,7 @@ const formatLastSeen = (value) => {
         return `${hours}h ago`;
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 };
-// Helper to transform user data
+
 export const transformUser = (user) => {
     if (!user) {
         return {
@@ -175,7 +171,7 @@ export const transformUser = (user) => {
             username: 'Unknown User',
             fullName: 'Unknown User',
             email: '',
-            avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=unknown',
+            avatarUrl: 'https:
             university: 'Unknown',
             department: '',
             level: '',
@@ -847,7 +843,7 @@ export const api = {
                 const audioFile = new File([audioBlob], 'voice_note.webm', { type: 'audio/webm' });
                 audioUrl = await uploadFile(audioFile);
             }
-            // If backend drops audio_url, pass it to image_url as fallback
+            
             if (audioUrl && !imageUrl && !videoUrl) {
                 imageUrl = audioUrl;
             }
@@ -873,7 +869,7 @@ export const api = {
         },
         createConversation: async (participantIds, name) => {
             const currentUserId = authStorage.getItem('user_id');
-            // First check if a conversation with this user already exists
+            
             try {
                 const existingRes = await apiClient.get('/conversations/');
                 const existingConvos = existingRes.data;
@@ -884,7 +880,7 @@ export const api = {
                 }
             }
             catch { }
-            // No existing conversation found, create a new one
+            
             const participant_ids = Array.from(new Set([...(currentUserId ? [currentUserId] : []), ...participantIds].map(String)));
             const res = await apiClient.post('/conversations/', { participant_ids, name });
             return transformConversation(res.data);

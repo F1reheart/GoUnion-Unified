@@ -204,7 +204,7 @@ export const Messages = () => {
         return messages.findIndex(m => !m.isRead && String(m.senderId) !== String(currentUserId));
     }, [messages, currentUserId]);
 
-    // Highlight the first unread message when a chat is opened or a new message arrives
+    
     useEffect(() => {
         if (firstUnreadIndex !== -1 && messages[firstUnreadIndex]) {
             setHighlightedMsgId(messages[firstUnreadIndex].id);
@@ -392,7 +392,7 @@ export const Messages = () => {
         onSuccess: (newServerMsg, _vars, context) => {
             queryClient.setQueryData(["messages", context?.activeChatId], (old) => {
                 const sansTemp = old?.filter((m) => !m.id.toString().startsWith("temp-")) || [];
-                // Compare IDs as strings to prevent duplicate voice notes if socket also fires
+                
                 if (!sansTemp.find(m => String(m.id) === String(newServerMsg.id))) {
                     return [...sansTemp, newServerMsg];
                 }
@@ -444,7 +444,7 @@ export const Messages = () => {
     return (
         <div className="h-[100dvh] w-full bg-[#030303] text-white overflow-hidden">
             <div className="h-full flex">
-                {/* Left Sidebar (Chat List) */}
+                {}
                 <aside className={`w-full md:w-[390px] md:min-w-[390px] bg-[#050505]/95 border-r border-white/10 flex-col ${selectedChatId ? "hidden md:flex" : "flex"}`}>
                     <div className="h-16 px-4 bg-[#0a0a0c]/95 border-b border-white/5 flex items-center justify-between">
                         <button onClick={() => navigate("/")} className="h-10 w-10 rounded-xl text-white/55 hover:text-white hover:bg-white/5 flex items-center justify-center shrink-0">
@@ -498,7 +498,7 @@ export const Messages = () => {
                     </div>
                 </aside>
 
-                {/* Main Chat Area */}
+                {}
                 <section className={`flex-1 bg-[#030303] flex-col relative ${selectedChatId ? "flex" : "hidden md:flex"}`}>
                     {activeChat ? (
                         <>
@@ -575,7 +575,7 @@ export const Messages = () => {
                                                         >
                                                             <div className={`flex max-w-[82%] flex-col gap-1 sm:max-w-[70%] ${mine ? "items-end" : "items-start"}`}>
                                                                 
-                                                                {/* Context Menu Icon */}
+                                                                {}
                                                                 <div className={`absolute top-2 ${mine ? "-left-10" : "-right-10"} opacity-40 group-hover:opacity-100 transition-opacity`}>
                                                                     <button onClick={(e) => { e.stopPropagation(); setActiveMessageMenu(activeMessageMenu === msg.id ? null : msg.id); }} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white shadow">
                                                                         <MoreVertical size={14} />
@@ -912,7 +912,7 @@ export const Messages = () => {
                 />
             )}
 
-            {/* Forward Modal */}
+            {}
             <AnimatePresence>
                 {isForwardModalOpen && msgToForward && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 px-4">

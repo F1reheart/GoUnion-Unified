@@ -8,10 +8,10 @@ import { HttpError } from '../utils/httpError.js';
 const hasCloudinaryConfig = () =>
   Boolean(process.env.CLOUDINARY_URL || (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET));
 
-// ── Local file storage fallback ─────────────────────────────────────────────
+
 const UPLOADS_DIR = path.resolve(process.cwd(), 'uploads');
 
-// Ensure uploads directory exists
+
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -29,7 +29,7 @@ const uploadLocally = (file) => {
   const filepath = path.join(UPLOADS_DIR, filename);
   fs.writeFileSync(filepath, file.buffer);
 
-  // The frontend's getFullUrl automatically prepends API_URL, so return the path without /api
+  
   const url = `/media/files/${filename}`;
   const resourceType = file.mimetype?.startsWith('video/') ? 'video' : file.mimetype?.startsWith('audio/') ? 'audio' : 'image';
 
@@ -41,11 +41,11 @@ const uploadLocally = (file) => {
   };
 };
 
-// ── Main upload function ────────────────────────────────────────────────────
+
 export const uploadToCloudStorage = (file) => {
   if (!file) throw new HttpError(400, 'No file was uploaded.');
 
-  // If Cloudinary is not configured, fall back to local storage
+  
   if (!hasCloudinaryConfig()) {
     console.log('[Storage] Cloudinary not configured — using local file storage.');
     return uploadLocally(file);
@@ -74,5 +74,5 @@ export const uploadToCloudStorage = (file) => {
   });
 };
 
-// ── Uploads directory path (for Express static serving) ─────────────────────
+
 export const UPLOADS_PATH = UPLOADS_DIR;

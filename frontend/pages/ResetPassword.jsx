@@ -4,30 +4,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, ArrowRight, CheckCircle2, AlertTriangle, Sparkles, Zap, Eye, EyeOff } from "lucide-react";
 import { api } from "../services/api";
-/**
- * Supabase appends the recovery token to the URL hash fragment when
- * redirecting after a password reset email click. It looks like:
- *   https://yourapp.com/reset-password#access_token=XXX&type=recovery&...
- *
- * Legacy links from HashRouter may still look like:
- *   https://yourapp.com/#/reset-password#access_token=XXX&type=recovery&...
- *
- * We support both formats.
- */
+
 function getTokenFromUrl() {
-    // Preferred format: /reset-password#access_token=... or /reset-password#token=...
+    
     if (window.location.hash.startsWith("#access_token=") || window.location.hash.startsWith("#token=")) {
         const params = new URLSearchParams(window.location.hash.slice(1));
         return params.get("access_token") || params.get("token");
     }
-    // Legacy format: #/reset-password#access_token=...
+    
     const fullHash = window.location.hash;
     const secondHash = fullHash.indexOf("#", 1);
     if (secondHash !== -1) {
         const params = new URLSearchParams(fullHash.slice(secondHash + 1));
         return params.get("access_token") || params.get("token");
     }
-    // Final fallback in case token is provided via query params.
+    
     const queryParams = new URLSearchParams(window.location.search);
     return queryParams.get("access_token") || queryParams.get("token");
 }

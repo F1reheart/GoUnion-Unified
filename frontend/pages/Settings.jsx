@@ -9,7 +9,7 @@ export const Settings = () => {
     const { user, logout, updateUser } = useAuthStore();
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState(null);
-    // Account Form State
+    
     const [fullName, setFullName] = useState(user?.fullName || "");
     const [username, setUsername] = useState(user?.username || "");
     const [bio, setBio] = useState(user?.bio || "");

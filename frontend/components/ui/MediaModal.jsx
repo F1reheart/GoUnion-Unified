@@ -12,7 +12,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
     const isOfficeDoc = fileName?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || mediaUrl?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
     const isDocument = isPdf || isOfficeDoc;
 
-    // For PDFs: fetch as blob and create a local blob URL so it works on both mobile and desktop
+    
     useEffect(() => {
         if (!isOpen || !mediaUrl || mediaType !== 'file') return;
         if (!isPdf) {
@@ -47,14 +47,14 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
         };
     }, [isOpen, mediaUrl, mediaType, isPdf]);
 
-    // Clean up blob URL on unmount or URL change
+    
     useEffect(() => {
         return () => {
             if (blobUrl) URL.revokeObjectURL(blobUrl);
         };
     }, [blobUrl]);
 
-    // Prevent background scrolling when open
+    
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -110,7 +110,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                     transition={{ type: "spring", bounce: 0, duration: 0.4 }}
                     className="flex flex-col w-full h-full overflow-hidden"
                 >
-                    {/* Header */}
+                    {}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-black/50 backdrop-blur-md shrink-0">
                         <div className="flex items-center gap-4 min-w-0">
                             <button 
@@ -142,7 +142,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                         </div>
                     </div>
 
-                    {/* Preview Area */}
+                    {}
                     <div className="flex-1 flex items-center justify-center bg-black overflow-hidden relative">
                         {mediaType === 'image' && (
                             <img 
@@ -163,7 +163,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
 
                         {mediaType === 'file' && (
                             <>
-                                {/* Loading overlay */}
+                                {}
                                 {loading && (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
                                         <Loader2 size={40} className="text-primary animate-spin mb-4" />
@@ -171,7 +171,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                                     </div>
                                 )}
 
-                                {/* PDF: render via blob URL in iframe */}
+                                {}
                                 {isPdf && blobUrl && !loadError && (
                                     <iframe 
                                         src={blobUrl}
@@ -181,7 +181,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                                     />
                                 )}
 
-                                {/* Office docs: use Google Docs Viewer */}
+                                {}
                                 {isOfficeDoc && !isPdf && !loadError && (
                                     <iframe 
                                         src={googleViewerUrl}
@@ -192,7 +192,7 @@ export const MediaModal = ({ isOpen, onClose, mediaUrl, mediaType, fileName }) =
                                     />
                                 )}
 
-                                {/* Error state or unsupported file */}
+                                {}
                                 {(loadError || (!isPdf && !isOfficeDoc && !loading)) && (
                                     <div className="text-center p-8 max-w-md bg-white/[0.02] border border-white/5 rounded-3xl backdrop-blur-md m-4">
                                         <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 text-primary shadow-lg shadow-primary/5">

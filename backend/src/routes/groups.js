@@ -201,7 +201,7 @@ groupsRouter.delete(
   '/:groupId/members/:userId',
   requireAuth,
   asyncHandler(async (req, res) => {
-    // A member can always leave/exit themselves, otherwise requires admin manage permission
+    
     if (req.params.userId !== req.user.id && !(await canManage(req.params.groupId, req.user))) {
       throw forbidden('You cannot remove members.');
     }
@@ -212,7 +212,7 @@ groupsRouter.delete(
     await GroupMember.deleteOne({ group_id: req.params.groupId, user_id: req.params.userId });
 
     if (req.params.userId === req.user.id) {
-      // Exiting
+      
       await Post.create({
         user_id: 'system',
         group_id: req.params.groupId,
@@ -221,7 +221,7 @@ groupsRouter.delete(
         likes: []
       });
     } else {
-      // Removed by Admin
+      
       const adminName = req.user.profile?.full_name || req.user.username;
       await Post.create({
         user_id: 'system',

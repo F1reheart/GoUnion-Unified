@@ -20,13 +20,13 @@ export const DownloadPage = () => {
 
     return (
         _jsxs("div", { className: "min-h-screen w-full bg-[#030303] flex flex-col relative overflow-x-hidden", children: [
-            // Ambient Background
+            
             _jsxs("div", { className: "absolute inset-0 overflow-hidden pointer-events-none", children: [
                 _jsx("div", { className: "absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[150px]" }),
                 _jsx("div", { className: "absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent/10 rounded-full blur-[150px]" })
             ] }),
             
-            // Header
+            
             _jsx("header", { className: "w-full p-6 flex justify-between items-center z-10", children: 
                 _jsxs("div", { className: "flex items-center gap-3", children: [
                     _jsx("div", { className: "w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center font-serif font-black text-xl", children: "G" }),
@@ -34,9 +34,9 @@ export const DownloadPage = () => {
                 ] })
             }),
 
-            // Main Content
+            
             _jsxs("main", { className: "flex-1 flex flex-col z-10 max-w-6xl mx-auto w-full px-6 pt-12 md:pt-20", children: [
-                // Hero Section
+                
                 _jsxs("section", { className: "flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-8 mb-32", children: [
                     _jsxs("div", { className: "flex-1 text-center lg:text-left", children: [
                         _jsx(motion.div, { 
@@ -91,7 +91,7 @@ export const DownloadPage = () => {
                         })
                     ] }),
                     
-                    // Phone Frame with Real Screenshot
+                    
                     _jsx(motion.div, { 
                         initial: { opacity: 0, scale: 0.9, rotate: 2 }, animate: { opacity: 1, scale: 1, rotate: 0 }, transition: { delay: 0.2, type: 'spring' },
                         className: "relative w-[300px] h-[600px] rounded-[3rem] border-8 border-white/10 bg-[#030303] shadow-2xl overflow-hidden flex-shrink-0 mx-auto", children: 
@@ -101,7 +101,7 @@ export const DownloadPage = () => {
                             className: "w-full h-full object-contain",
                             onError: (e) => {
                                 e.target.onerror = null;
-                                // Fallback gradient if image not found yet
+                                
                                 e.target.parentElement.className += " bg-gradient-to-b from-zinc-800 to-black flex items-center justify-center text-zinc-500 text-sm text-center p-4";
                                 e.target.outerHTML = "<span>Save your image as <br/><b>public/screenshot-main.png</b></span>";
                             }
@@ -109,7 +109,7 @@ export const DownloadPage = () => {
                     })
                 ] }),
 
-                // Features Grid
+                
                 _jsxs("section", { className: "pb-32", children: [
                     _jsx("div", { className: "text-center mb-16 px-4", children: 
                         _jsx("h2", { className: "font-serif text-3xl md:text-4xl font-bold text-white", children: "Everything you need on campus" })

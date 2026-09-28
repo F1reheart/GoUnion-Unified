@@ -4,6 +4,7 @@ import { serializeStory } from '../store.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { notFound } from '../utils/httpError.js';
+import { getSameUniversityUserIds } from '../utils/universityFilter.js';
 
 export const storiesRouter = Router();
 
@@ -11,7 +12,8 @@ storiesRouter.get(
   '/feed',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const stories = await Story.find({ expires_at: { $gt: new Date() } }).sort({ created_at: -1 }).limit(100);
+    const campusUserIds = await getSameUniversityUserIds(req.user);
+    const stories = await Story.find({ expires_at: { $gt: new Date() }, user_id: { $in: campusUserIds } }).sort({ created_at: -1 }).limit(100);
     res.json(await Promise.all(stories.map((story) => serializeStory(story, req.user.id))));
   }),
 );

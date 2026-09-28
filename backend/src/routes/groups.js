@@ -4,6 +4,7 @@ import { addNotification, publicUser, serializeGroup, serializePost } from '../s
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { forbidden, notFound } from '../utils/httpError.js';
+import { getSameUniversityUserIds } from '../utils/universityFilter.js';
 
 export const groupsRouter = Router();
 
@@ -14,7 +15,8 @@ groupsRouter.get(
   '/',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const groups = await Group.find({ is_active: true }).sort({ created_at: -1 });
+    const campusUserIds = await getSameUniversityUserIds(req.user);
+    const groups = await Group.find({ is_active: true, creator_id: { $in: campusUserIds } }).sort({ created_at: -1 });
     res.json(await Promise.all(groups.map((group) => serializeGroup(group, req.user.id))));
   }),
 );

@@ -11,7 +11,7 @@ import { InviteModal } from "../ui/InviteModal";
 
 const NAV_ITEMS = [
     { icon: Home, label: "Home", path: "/" },
-    { icon: Compass, label: "Goto", path: "/goto" },
+    { icon: Compass, label: "Konnect", path: "/goto" },
     { icon: Users, label: "Groups", path: "/groups" },
     { icon: MessageSquare, label: "Messages", path: "/messages" },
     { icon: Bell, label: "Notifications", path: "/notifications" },

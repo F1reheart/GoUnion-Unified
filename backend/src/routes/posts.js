@@ -6,6 +6,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { HttpError, forbidden, notFound } from '../utils/httpError.js';
 import { notifyMentions } from '../utils/mentions.js';
 import { getIo } from '../socket.js';
+import { getSameUniversityUserIds } from '../utils/universityFilter.js';
 
 export const postsRouter = Router();
 
@@ -22,8 +23,18 @@ postsRouter.get(
   '/feed',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const query = req.query.reels === 'true' ? { video: { $nin: [null, ''] }, is_taken_down: { $ne: true } } : { is_taken_down: { $ne: true } };
-    const posts = await Post.find(query).sort({ created_at: -1 }).skip(Number(req.query.skip || 0)).limit(Number(req.query.limit || 10));
+    const isReels = req.query.reels === 'true';
+    const baseQuery = isReels
+      ? { video: { $nin: [null, ''] }, is_taken_down: { $ne: true } }
+      : { is_taken_down: { $ne: true } };
+
+    // Konnect (reels) = cross-school discovery; normal feed = same campus only
+    if (!isReels) {
+      const campusUserIds = await getSameUniversityUserIds(req.user);
+      baseQuery.user_id = { $in: campusUserIds };
+    }
+
+    const posts = await Post.find(baseQuery).sort({ created_at: -1 }).skip(Number(req.query.skip || 0)).limit(Number(req.query.limit || 10));
     res.json(await Promise.all(posts.map((post) => serializePost(post, req.user.id))));
   }),
 );

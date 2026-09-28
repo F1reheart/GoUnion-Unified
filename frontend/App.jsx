@@ -508,7 +508,7 @@ const AppRoutes = () => {
     const currentPath = location.pathname.endsWith('/') && location.pathname !== '/'
         ? location.pathname.slice(0, -1)
         : location.pathname;
-    const isPwa = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isPwa = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || (window.Capacitor && window.Capacitor.isNativePlatform());
     const isReturningUser = localStorage.getItem('returning_user') === 'true';
 
     if (!isAuthenticated && !PUBLIC_ROUTES.includes(currentPath) && currentPath !== "/welcome-back") {
@@ -535,3 +535,4 @@ const App = () => {
     return (_jsx(QueryClientProvider, { client: queryClient, children: _jsx(ToastProvider, { children: _jsx(BrowserRouter, { children: _jsx(AppRoutes, {}) }) }) }));
 };
 export default App;
+

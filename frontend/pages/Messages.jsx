@@ -286,9 +286,9 @@ export const Messages = () => {
                 setContactEmails(new Set(contacts.flatMap((contact) => contact.email || []).map(normalizeContactToken).filter(Boolean)));
                 setContactNames(new Set(contacts.flatMap((contact) => contact.name || []).map(normalizeContactToken).filter(Boolean)));
             } else if (navigator.share) {
-                await navigator.share({ title: "Join GoUnion", text: "Hey! I'd love for you to join me on GoUnion. It's a great space to connect. Download the app here:", url: "https://gounion.me/download" });
+                await navigator.share({ title: "Join Reconnected", text: "Hey! I'd love for you to join me on Reconnected. It's a great space to connect. Download the app here:", url: "https://reconnected.com/download" });
             } else if (navigator.clipboard) {
-                await navigator.clipboard.writeText(`Hey! I'd love for you to join me on GoUnion. It's a great space to connect. Download the app here:\nhttps://gounion.me/download`);
+                await navigator.clipboard.writeText(`Hey! I'd love for you to join me on Reconnected. It's a great space to connect. Download the app here:\nhttps://reconnected.com/download`);
                 toast("Invite link copied to clipboard.", "success");
             }
         } catch (err) {
@@ -299,9 +299,9 @@ export const Messages = () => {
     const shareAppLink = async () => {
         try {
             if (navigator.share) {
-                await navigator.share({ title: "Join GoUnion", url: "https://gounion.me/download" });
+                await navigator.share({ title: "Join Reconnected", url: "https://reconnected.com/download" });
             } else {
-                await navigator.clipboard.writeText("https://gounion.me/download");
+                await navigator.clipboard.writeText("https://reconnected.com/download");
             }
             toast("App link shared successfully!", "success");
         } catch (e) {
@@ -453,7 +453,7 @@ export const Messages = () => {
                         <Link to="/" className="flex items-center gap-3 min-w-0">
                             <div className="h-10 w-10 rounded-xl bg-primary text-black flex items-center justify-center font-black shadow-lg shadow-primary/20">G</div>
                             <div className="min-w-0">
-                                <p className="font-semibold leading-none text-white">GoUnion Chats</p>
+                                <p className="font-semibold leading-none text-white">Reconnected Chats</p>
                                 <p className="text-xs text-white/40 mt-1">Direct Messages</p>
                             </div>
                         </Link>
@@ -850,7 +850,7 @@ export const Messages = () => {
                                 <div className="mx-auto h-24 w-24 rounded-3xl border border-white/10 bg-[#111114] flex items-center justify-center text-primary mb-6 shadow-2xl">
                                     <MessageSquarePlus size={34} />
                                 </div>
-                                <h1 className="text-3xl font-serif text-white">GoUnion Messages</h1>
+                                <h1 className="text-3xl font-serif text-white">Reconnected Messages</h1>
                                 <p className="mt-3 text-sm leading-6 text-white/40">Select a chat from the left or search to start a new conversation.</p>
                             </div>
                         </div>
@@ -865,7 +865,7 @@ export const Messages = () => {
                                 <div className="flex items-center justify-between border-b border-white/5 p-5">
                                     <div>
                                         <h2 className="text-lg font-black text-white">Contacts & Suggestions</h2>
-                                        <p className="mt-1 text-xs text-white/40">Connect with people on GoUnion.</p>
+                                        <p className="mt-1 text-xs text-white/40">Connect with people on Reconnected.</p>
                                     </div>
                                     <button onClick={() => setIsSuggestionsOpen(false)} className="h-10 w-10 rounded-xl text-white/50 hover:bg-white/5 hover:text-white">
                                         <X size={20} />
@@ -969,3 +969,4 @@ export const Messages = () => {
         </div>
     );
 };
+

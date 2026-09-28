@@ -10,9 +10,9 @@ export const InviteModal = ({ isOpen, onClose, username }) => {
     
     const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
         ? window.location.origin 
-        : 'https://gounion.me';
+        : 'https://reconnected.com';
     const inviteLink = `${baseUrl}/login?isSignup=true`;
-    const shareMessage = `Hey! Join me on GoUnion, the exclusive real-time college campus network for students. Sign up here: ${inviteLink}`;
+    const shareMessage = `Hey! Join me on Reconnected, the exclusive real-time college campus network for students. Sign up here: ${inviteLink}`;
     
     const handleCopy = async () => {
         try {
@@ -34,7 +34,7 @@ export const InviteModal = ({ isOpen, onClose, username }) => {
     };
     
     const shareToEmail = () => {
-        window.open(`mailto:?subject=Join%20GoUnion&body=${encodeURIComponent(shareMessage)}`, '_blank');
+        window.open(`mailto:?subject=Join%20Reconnected&body=${encodeURIComponent(shareMessage)}`, '_blank');
     };
 
     return (
@@ -72,7 +72,7 @@ export const InviteModal = ({ isOpen, onClose, username }) => {
                         
                         <div className="space-y-4 py-2">
                             <p className="text-sm text-zinc-400 leading-relaxed">
-                                Share the link below to invite other university students to join GoUnion.
+                                Share the link below to invite other university students to join Reconnected.
                             </p>
                             
                             <div className="relative flex items-center bg-white/5 border border-white/5 rounded-2xl p-4 gap-3">
@@ -118,3 +118,4 @@ export const InviteModal = ({ isOpen, onClose, username }) => {
         </AnimatePresence>
     );
 };
+

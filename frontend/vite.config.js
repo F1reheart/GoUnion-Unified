@@ -18,8 +18,8 @@ export default defineConfig(({ mode }) => {
                 injectRegister: 'auto',
                 includeAssets: ['pwa-192x192.png', 'pwa-512x512.png', 'favicon.png'],
                 manifest: {
-                    name: 'GoUnion',
-                    short_name: 'GoUnion',
+                    name: 'Reconnected',
+                    short_name: 'Reconnected',
                     description: 'The elite campus collective',
                     theme_color: '#030303',
                     background_color: '#030303',
@@ -96,3 +96,4 @@ export default defineConfig(({ mode }) => {
         }
     };
 });
+

@@ -28,6 +28,7 @@ import { ConfirmIdentity } from "./pages/ConfirmIdentity";
 import { useAuthStore } from "./store";
 import { usePwaStore } from "./store/pwaStore";
 import { PwaUpdater } from "./components/pwa/PwaUpdater";
+import { SplashScreen } from '@capacitor/splash-screen';
 import { API_URL, api } from "./services/api";
 import { io as ioClient } from "socket.io-client";
 import { authStorage } from "./utils/persistentStorage";
@@ -449,6 +450,7 @@ const AppRoutes = () => {
         void Promise.all([checkAuth(), minimumSplash]).finally(() => {
             if (!cancelled)
                 setShowStartupSplash(false);
+                if (Capacitor.isNativePlatform()) { SplashScreen.hide(); }
         });
         return () => {
             cancelled = true;
@@ -535,4 +537,5 @@ const App = () => {
     return (_jsx(QueryClientProvider, { client: queryClient, children: _jsx(ToastProvider, { children: _jsx(BrowserRouter, { children: _jsx(AppRoutes, {}) }) }) }));
 };
 export default App;
+
 

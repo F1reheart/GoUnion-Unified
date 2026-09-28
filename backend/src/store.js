@@ -105,7 +105,7 @@ export const serializePost = async (postOrDoc, viewerId = null) => {
 if (env.vapidPublicKey && env.vapidPrivateKey) {
   try {
     webpush.setVapidDetails(
-      'mailto:support@gounion.app',
+      'mailto:support@reconnected.com',
       env.vapidPublicKey,
       env.vapidPrivateKey
     );
@@ -148,7 +148,7 @@ export const addNotification = async ({ user_id, sender_id, type, post_id = null
         }
       }
       const payload = JSON.stringify({
-        title: 'GoUnion Network',
+        title: 'Reconnected',
         body: bodyText,
         icon: '/pwa-192x192.png',
         badge: '/pwa-192x192.png',
@@ -174,7 +174,7 @@ export const addNotification = async ({ user_id, sender_id, type, post_id = null
       }
     }
   } catch (pushErr) {
-    
+    console.error('Push notification delivery failed:', pushErr.message || pushErr);
   }
 
   return doc;

@@ -60,7 +60,7 @@ const PrivateRoute = ({ children }) => {
     return _jsx(AppLayout, { children: children });
 };
 const AppStartupSplash = () => {
-    return (_jsx("div", { className: "min-h-screen w-full bg-[#030303] text-white flex items-center justify-center px-6", children: _jsxs("div", { className: "glass-panel rounded-3xl p-10 w-full max-w-sm text-center", children: [_jsx("div", { className: "mx-auto w-16 h-16 rounded-2xl bg-white text-black flex items-center justify-center font-serif font-black text-3xl", children: "G" }), _jsx("h1", { className: "mt-5 font-serif text-3xl tracking-tight", children: "GoUnion" }), _jsx("p", { className: "mt-3 text-sm text-zinc-300 leading-relaxed", children: "Loading" }), _jsx("p", { className: "mt-4 text-2xl text-primary animate-pulse", "aria-hidden": "true", children: "." })] }) }));
+    return (_jsx("div", { className: "min-h-screen w-full bg-[#030303] text-white flex items-center justify-center px-6", children: _jsxs("div", { className: "glass-panel rounded-3xl p-10 w-full max-w-sm text-center", children: [_jsx("div", { className: "mx-auto w-16 h-16 rounded-2xl bg-white text-black flex items-center justify-center font-serif font-black text-3xl", children: "R" }), _jsx("h1", { className: "mt-5 font-serif text-3xl tracking-tight", children: "Reconnected" }), _jsx("p", { className: "mt-3 text-sm text-zinc-300 leading-relaxed", children: "Loading" }), _jsx("p", { className: "mt-4 text-2xl text-primary animate-pulse", "aria-hidden": "true", children: "." })] }) }));
 };
 const PageLoadingDots = () => (_jsx("div", { className: "fixed top-20 left-1/2 z-[220] -translate-x-1/2 rounded-full border border-white/10 bg-black/70 px-4 py-2 shadow-2xl backdrop-blur-xl", children: _jsxs("div", { className: "flex items-center gap-1.5", "aria-label": "Loading page", children: [_jsx("span", { className: "h-1.5 w-1.5 rounded-full bg-white/70 animate-bounce [animation-delay:-0.2s]" }), _jsx("span", { className: "h-1.5 w-1.5 rounded-full bg-white/70 animate-bounce [animation-delay:-0.1s]" }), _jsx("span", { className: "h-1.5 w-1.5 rounded-full bg-white/70 animate-bounce" })] }) }));
 const useWebSocket = () => {
@@ -91,7 +91,7 @@ const useWebSocket = () => {
                     toast("New message", "info");
                     if ('Notification' in window && Notification.permission === 'granted') {
                         try {
-                            new Notification("GoUnion", {
+                            new Notification("Reconnected", {
                                 body: "You have a new message",
                                 icon: '/pwa-192x192.png',
                                 tag: `gounion-msg-${Date.now()}`,
@@ -355,11 +355,11 @@ const useNotificationPopups = () => {
             }
             const actor = notification.actor?.username || notification.actor?.fullName || "Someone";
             toast(`${actor} ${msg}`, "info");
-            sendNativeNotification("GoUnion", `${actor} ${msg}`);
+            sendNativeNotification("Reconnected", `${actor} ${msg}`);
         }
         else {
             toast(`You have ${newNotifications.length} new notifications.`, "info");
-            sendNativeNotification("GoUnion", `You have ${newNotifications.length} new notifications.`);
+            sendNativeNotification("Reconnected", `You have ${newNotifications.length} new notifications.`);
         }
     }, [isAuthenticated, notifications, toast, location.pathname]);
 };
@@ -537,5 +537,6 @@ const App = () => {
     return (_jsx(QueryClientProvider, { client: queryClient, children: _jsx(ToastProvider, { children: _jsx(BrowserRouter, { children: _jsx(AppRoutes, {}) }) }) }));
 };
 export default App;
+
 
 

@@ -11,7 +11,7 @@ self.addEventListener('push', function(event) {
       }
     };
     event.waitUntil(
-      self.registration.showNotification(payload.title || 'GoUnion', options)
+      self.registration.showNotification(payload.title || 'Reconnected', options)
     );
   } catch (err) {
     console.error('Error handling push event:', err);
@@ -36,3 +36,4 @@ self.addEventListener('notificationclick', function(event) {
     })
   );
 });
+

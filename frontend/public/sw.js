@@ -6,7 +6,7 @@ self.addEventListener("push", (event) => {
     try {
       data = event.data.json();
     } catch (e) {
-      data = { title: "GoUnion", body: event.data.text() };
+      data = { title: "Reconnected", body: event.data.text() };
     }
 
     const title = data.title || "New Notification";
@@ -42,3 +42,4 @@ self.addEventListener("notificationclick", (event) => {
     })
   );
 });
+

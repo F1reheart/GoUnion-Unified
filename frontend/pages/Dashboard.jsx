@@ -8,7 +8,7 @@ import { FollowBackUrge } from "../components/feed/FollowBackUrge";
 import { useAuthStore } from "../store";
 import { MapPin, Users, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { WelcomeTour } from "../components/onboarding/WelcomeTour";
+
 
 export const Dashboard = () => {
   const queryClient = useQueryClient();
@@ -86,7 +86,7 @@ export const Dashboard = () => {
 
   return (
     <div className="w-full overflow-x-hidden px-0 pb-24 pt-0">
-      <WelcomeTour />
+      
       
       {/* Campus Header */}
       <div className="px-5 sm:px-8 pt-8 pb-3 md:pt-10 md:pb-3 bg-[#030303]/80 backdrop-blur-xl sticky top-0 z-40 hidden md:block">
@@ -216,4 +216,5 @@ export const Dashboard = () => {
     </div>
   );
 };
+
 

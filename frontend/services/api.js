@@ -171,7 +171,7 @@ export const transformUser = (user) => {
             username: 'Unknown User',
             fullName: 'Unknown User',
             email: '',
-            avatarUrl: 'https:
+            avatarUrl: 'https://ui-avatars.com/api/?name=Unknown',
             university: 'Unknown',
             department: '',
             level: '',
